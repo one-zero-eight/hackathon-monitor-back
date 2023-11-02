@@ -2,6 +2,14 @@
 
 ## Development
 
+### Requirements
+
+- Python 3.11
+- Poetry
+- Docker
+
+### How to start
+
 1. Copy `.env.example` to `.env` and edit values if needed.
 2. Run `openssl genrsa -out private.pem 2048` to generate private key for JWT signing.
 3. Run `openssl rsa -in private.pem -pubout -out public.pem` to generate public key for JWT verification.
@@ -11,3 +19,11 @@
 7. Run `poetry run alembic upgrade head` to run database migrations.
 8. Run `poetry run uvicorn src.__main__:app --reload` to start the development server.
 9. Go to http://127.0.0.1:8000/docs to see the API documentation.
+
+### How to make migrations
+
+1. Configure database connection in `alembic.ini`. Using sync driver is recommended.
+2. Run `poetry run alembic revision --autogenerate -m "Migration name"` to generate migration.
+3. Run `poetry run alembic upgrade head` to apply migration.
+4. Run `poetry run alembic downgrade -1` to revert migration.
+5. Run `poetry run alembic history` to see migration history.
