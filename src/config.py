@@ -50,13 +50,15 @@ class Settings(BaseSettings):
     AUTH_ALLOWED_DOMAINS: list[str] = ["innohassle.ru", "api.innohassle.ru", "localhost"]
 
     @field_validator("JWT_PRIVATE_KEY", mode="before")
-    def parse_jwt_keys_private(self, value):
+    @classmethod
+    def parse_jwt_keys_private(cls, value):
         if isinstance(value, str):
             return serialization.load_pem_private_key(value.encode(), password=None)
         return value
 
     @field_validator("JWT_PUBLIC_KEY", mode="before")
-    def parse_jwt_keys_public(self, value):
+    @classmethod
+    def parse_jwt_keys_public(cls, value):
         if isinstance(value, str):
             return serialization.load_pem_public_key(value.encode())
         return value
