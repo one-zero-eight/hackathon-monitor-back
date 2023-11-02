@@ -17,7 +17,7 @@ async def setup_repositories():
     Dependencies.set_storage(storage)
     Dependencies.set_user_repository(user_repository)
 
-    await storage.create_all()
+    # await storage.create_all()
 
 
 def generate_unique_operation_id(route: APIRoute) -> str:
