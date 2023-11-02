@@ -2,7 +2,7 @@ from enum import StrEnum
 from pathlib import Path
 from typing import Optional
 
-from pydantic import SecretStr, model_validator
+from pydantic import SecretStr, model_validator, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from cryptography.hazmat.primitives import serialization
@@ -49,12 +49,17 @@ class Settings(BaseSettings):
     AUTH_COOKIE_DOMAIN: str = "innohassle.ru" if ENVIRONMENT == Environment.PRODUCTION else "localhost"
     AUTH_ALLOWED_DOMAINS: list[str] = ["innohassle.ru", "api.innohassle.ru", "localhost"]
 
-    @model_validator(mode="before")
-    def parse_jwt_keys(self):
-        if self.JWT_PRIVATE_KEY is not None:
-            self.JWT_PRIVATE_KEY = serialization.load_pem_private_key(str(self.JWT_PRIVATE_KEY).encode(), password=None)
-        if self.JWT_PUBLIC_KEY is not None:
-            self.JWT_PUBLIC_KEY = serialization.load_pem_public_key(str(self.JWT_PUBLIC_KEY).encode())
+    @field_validator("JWT_PRIVATE_KEY", mode="before")
+    def parse_jwt_keys_private(self, value):
+        if isinstance(value, str):
+            return serialization.load_pem_private_key(value.encode(), password=None)
+        return value
+
+    @field_validator("JWT_PUBLIC_KEY", mode="before")
+    def parse_jwt_keys_public(self, value):
+        if isinstance(value, str):
+            return serialization.load_pem_public_key(value.encode())
+        return value
 
     @model_validator(mode="after")
     def validate_jwt_keys(self):
