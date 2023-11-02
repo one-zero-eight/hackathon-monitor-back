@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     Settings for the application. Get settings from .env file.
     """
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     # Prefix for the API path (e.g. "/api/v0")
     APP_ROOT_PATH: str = ""
