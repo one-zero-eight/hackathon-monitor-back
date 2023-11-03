@@ -1,18 +1,17 @@
 from typing import Annotated
 
-from src.app.dependencies import DEPENDS_USER_REPOSITORY, DEPENDS_BOT, DEPENDS_PG_STAT_REPOSITORY
+from src.app.dependencies import DEPENDS_BOT, DEPENDS_PG_STAT_REPOSITORY
 from src.app.pg import router
 from src.exceptions import (
     IncorrectCredentialsException,
     NoCredentialsException,
 )
-from src.repositories.users import AbstractUserRepository
 from src.repositories.pg_stats import AbstractPgStatRepository
-from src.schemas.pg_stats import ViewPgStatActivity
+from src.schemas.pg_stats import ViewPgStatActivity, TerminatePgBackendResult
 
 
 @router.get(
-    "/pg-stat-activity",
+    "/stat-activity",
     responses={
         200: {"description": "Current database statistics"},
         **IncorrectCredentialsException.responses,
@@ -33,18 +32,20 @@ async def get_statistics(
 
 
 @router.get(
-    "/kill-session",
+    "/terminate-session",
     responses={
-        200: {"description": "Kill session by pid"},
+        200: {"description": "Terminate session by pid"},
         **IncorrectCredentialsException.responses,
         **NoCredentialsException.responses,
     },
 )
-async def kill_session(
-    user_id: int,
-    pid: int,  # noqa
+async def terminate_session(
+    # user_id: int,
+    pid: int,
     _verify_bot: Annotated[bool, DEPENDS_BOT],
-    user_repository: Annotated[AbstractUserRepository, DEPENDS_USER_REPOSITORY],
-):
-    _user = await user_repository.read(user_id)
-    # TODO: Add kill session
+    # user_repository: Annotated[AbstractUserRepository, DEPENDS_USER_REPOSITORY],
+    pg_stats_repository: Annotated[AbstractPgStatRepository, DEPENDS_PG_STAT_REPOSITORY],
+) -> TerminatePgBackendResult:
+    # _user = await user_repository.read(user_id)
+    terminate_pg_backend = await pg_stats_repository.terminate_pg_backend(pid)
+    return terminate_pg_backend

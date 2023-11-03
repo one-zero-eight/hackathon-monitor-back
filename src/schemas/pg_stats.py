@@ -31,3 +31,12 @@ class ViewPgStatActivity(BaseModel):
     @classmethod
     def validate_ipv4(cls, val):
         return str(val)
+
+
+class TerminatePgBackend(BaseModel):
+    pid: int
+
+
+class TerminatePgBackendResult(BaseModel):
+    success: bool
+    detail: str = None
