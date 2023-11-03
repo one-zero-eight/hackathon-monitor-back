@@ -20,7 +20,7 @@ bearer_scheme = HTTPBearer(
 cookie_scheme = APIKeyCookie(
     scheme_name="Cookie",
     description="Your JSON Web Token (JWT) stored as 'token' cookie",
-    name=settings.AUTH_COOKIE_NAME,  # Cookie name
+    name=settings.AUTH.COOKIE_NAME,  # Cookie name
     auto_error=False,  # We'll handle error manually
 )
 

@@ -11,11 +11,11 @@ from src.exceptions import InvalidRedirectUri
 def redirect_with_token(return_to: str, token: str):
     response = RedirectResponse(return_to, status_code=302)
     response.set_cookie(
-        key=settings.AUTH_COOKIE_NAME,
+        key=settings.AUTH.COOKIE_NAME,
         value=token,
         httponly=True,
         secure=True,
-        domain=settings.AUTH_COOKIE_DOMAIN,
+        domain=settings.AUTH.COOKIE_DOMAIN,
         expires=datetime.now().astimezone(tz=timezone.utc) + timedelta(days=90),
     )
     return response
@@ -24,10 +24,10 @@ def redirect_with_token(return_to: str, token: str):
 def redirect_deleting_token(return_to: str):
     response = RedirectResponse(return_to, status_code=302)
     response.delete_cookie(
-        key=settings.AUTH_COOKIE_NAME,
+        key=settings.AUTH.COOKIE_NAME,
         httponly=True,
         secure=True,
-        domain=settings.AUTH_COOKIE_DOMAIN,
+        domain=settings.AUTH.COOKIE_DOMAIN,
     )
     return response
 
@@ -37,7 +37,7 @@ def ensure_allowed_return_to(return_to: str):
         url = URL(return_to)
         if url.hostname is None:
             return  # Ok. Allow returning to current domain
-        if url.hostname in settings.AUTH_ALLOWED_DOMAINS:
+        if url.hostname in settings.AUTH.ALLOWED_DOMAINS:
             return  # Ok. Hostname is allowed (does not check port)
     except (AssertionError, ValueError):
         pass  # Bad. URL is malformed

@@ -19,7 +19,7 @@ class TokenRepository(AbstractTokenRepository):
     async def verify_user_token(cls, token: str) -> UserTokenData:
         try:
             user_repository = Dependencies.get_user_repository()
-            payload = jwt.decode(token, settings.JWT_PUBLIC_KEY)
+            payload = jwt.decode(token, settings.JWT.PUBLIC_KEY)
             user_id: str = payload.get("sub")
 
             if user_id is None or not user_id.isdigit():
@@ -41,7 +41,7 @@ class TokenRepository(AbstractTokenRepository):
         issued_at = datetime.utcnow()
         expire = issued_at + expires_delta
         payload.update({"exp": expire, "iat": issued_at})
-        encoded_jwt = jwt.encode({"alg": cls.ALGORITHM}, payload, settings.JWT_PRIVATE_KEY)
+        encoded_jwt = jwt.encode({"alg": cls.ALGORITHM}, payload, settings.JWT.PRIVATE_KEY)
         return str(encoded_jwt, "utf-8")
 
     @classmethod
