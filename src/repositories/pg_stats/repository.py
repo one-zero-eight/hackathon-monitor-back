@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import text
 
-from src.schemas.pg_stats import ViewPgStatActivity
+from src.schemas.pg_stats import ViewPgStatActivity, TerminatePgBackendResult
 from src.repositories.pg_stats.abc import AbstractPgStatRepository
 from src.storages.sqlalchemy import AbstractSQLAlchemyStorage
 
@@ -20,3 +20,13 @@ class PgStatRepository(AbstractPgStatRepository):
 
             if pg_stat_activity:
                 return [ViewPgStatActivity.model_validate(r, from_attributes=True) for r in pg_stat_activity]
+
+    async def terminate_pg_backend(self, pid: int) -> TerminatePgBackendResult:
+        async with self._create_session() as session:
+            statement = text(f"""SELECT pg_terminate_backend({pid}) FROM pg_stat_activity""")
+            termination_result = (await session.execute(statement)).first()[0]
+            if not termination_result:
+                return TerminatePgBackendResult(
+                    success=termination_result, detail=f"Impossible to kill session with PID {pid}."
+                )
+            return TerminatePgBackendResult(success=termination_result)
