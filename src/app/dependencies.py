@@ -5,6 +5,8 @@ __all__ = [
     "DEPENDS_STORAGE",
     "DEPENDS_USER_REPOSITORY",
     "DEPENDS_CURRENT_USER_ID",
+    "DEPENDS_WEBAPP",
+    "DEPENDS_PG_STAT_REPOSITORY",
     "Dependencies",
 ]
 
@@ -63,7 +65,8 @@ DEPENDS_USER_REPOSITORY = Depends(Dependencies.get_user_repository)
 DEPENDS_SMTP_REPOSITORY = Depends(Dependencies.get_smtp_repository)
 DEPENDS_PG_STAT_REPOSITORY = Depends(Dependencies.get_pg_stat_repository)
 
-from src.app.auth.dependencies import get_current_user_id, verify_bot_token  # noqa: E402
+from src.app.auth.dependencies import get_current_user_id, verify_bot_token, verify_webapp  # noqa: E402
 
-DEPENDS_BOT = Depends(verify_bot_token)
 DEPENDS_CURRENT_USER_ID = Depends(get_current_user_id)
+DEPENDS_BOT = Depends(verify_bot_token)
+DEPENDS_WEBAPP = Depends(verify_webapp)

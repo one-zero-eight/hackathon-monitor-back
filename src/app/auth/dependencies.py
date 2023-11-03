@@ -1,13 +1,14 @@
-__all__ = ["get_current_user_id", "verify_bot_token"]
+__all__ = ["get_current_user_id", "verify_bot_token", "verify_webapp"]
 
 from typing import Optional
 
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer, APIKeyCookie
 
-from src.repositories.tokens import TokenRepository
+from src.app.auth.telegram import telegram_check_authorization, TelegramWidgetData
 from src.config import settings
 from src.exceptions import NoCredentialsException, IncorrectCredentialsException
+from src.repositories.tokens import TokenRepository
 
 bearer_scheme = HTTPBearer(
     scheme_name="Bearer",
@@ -66,3 +67,18 @@ async def get_current_user_id(
 
     token_data = await TokenRepository.verify_user_token(token)
     return token_data.user_id
+
+
+def verify_webapp(
+    telegram_data: TelegramWidgetData,
+) -> bool:
+    """
+    Verify telegram data
+
+    https://core.telegram.org/widgets/login#checking-authorization
+    :raises IncorrectCredentialsException: if hash is invalid
+    """
+    if not telegram_check_authorization(telegram_data):
+        raise IncorrectCredentialsException()
+
+    return True
