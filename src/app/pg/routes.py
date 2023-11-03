@@ -1,4 +1,4 @@
-from typing import Annotated, Optional
+from typing import Annotated, Optional, Union
 
 from src.app.dependencies import DEPENDS_BOT, DEPENDS_PG_STAT_REPOSITORY
 from src.app.pg import router
@@ -6,8 +6,10 @@ from src.exceptions import (
     IncorrectCredentialsException,
     NoCredentialsException,
 )
-from src.repositories.pg_stats import AbstractPgStatRepository
+from src.repositories.pg import AbstractPgRepository
 from src.schemas.pg_stats import ViewPgStatActivity, ViewPgStatActivitySummary, PgStat
+from src.storages.monitoring.config import settings as monitoring_settings, Action
+from src.exceptions import ActionNotFoundException
 
 from pydantic import BaseModel, ConfigDict
 
@@ -46,10 +48,10 @@ async def terminate_session(
     pid: int,
     _verify_bot: Annotated[bool, DEPENDS_BOT],
     # user_repository: Annotated[AbstractUserRepository, DEPENDS_USER_REPOSITORY],
-    pg_stats_repository: Annotated[AbstractPgStatRepository, DEPENDS_PG_STAT_REPOSITORY],
+    pg_repository: Annotated[AbstractPgRepository, DEPENDS_PG_STAT_REPOSITORY],
 ) -> PgTerminateSessionResult:
     # _user = await user_repository.read(user_id)
-    success = await pg_stats_repository.terminate_pg_backend(pid)
+    success = await pg_repository.terminate_pg_backend(pid)
 
     if not success:
         return PgTerminateSessionResult(
@@ -70,10 +72,10 @@ async def get_statistics_summary(
     # user_id: int,
     _verify_bot: Annotated[bool, DEPENDS_BOT],
     # user_repository: Annotated[AbstractUserRepository, DEPENDS_USER_REPOSITORY],
-    pg_stats_repository: Annotated[AbstractPgStatRepository, DEPENDS_PG_STAT_REPOSITORY],
+    pg_repository: Annotated[AbstractPgRepository, DEPENDS_PG_STAT_REPOSITORY],
 ) -> PgStatActivitySummaryResult:
     # _user = await user_repository.read(user_id)
-    pg_stat_activity = await pg_stats_repository.read_pg_stat_summary()
+    pg_stat_activity = await pg_repository.read_pg_stat_summary()
 
     if pg_stat_activity:
         return PgStatActivitySummaryResult(
@@ -94,7 +96,7 @@ async def get_statistics(
     # user_id: int,
     _verify_bot: Annotated[bool, DEPENDS_BOT],
     # user_repository: Annotated[AbstractUserRepository, DEPENDS_USER_REPOSITORY],
-    pg_stats_repository: Annotated[AbstractPgStatRepository, DEPENDS_PG_STAT_REPOSITORY],
+    pg_repository: Annotated[AbstractPgRepository, DEPENDS_PG_STAT_REPOSITORY],
     limit: int = 20,
     stat_name: PgStat = PgStat.pg_stat_activity,
 ) -> list[dict]:
@@ -105,7 +107,7 @@ async def get_statistics(
     https://www.postgresql.org/docs/current/monitoring-stats.html#MONITORING-PG-STAT-ACTIVITY-VIEW
     """
     # _user = await user_repository.read(user_id)
-    pg_stat_activity = await pg_stats_repository.read_pg_stat(pg_stat_name=stat_name, limit=limit)
+    pg_stat_activity = await pg_repository.read_pg_stat(pg_stat_name=stat_name, limit=limit)
 
     objects = []
     for r in pg_stat_activity:
@@ -121,3 +123,30 @@ async def get_statistics(
                 _[key] = str(v)
         objects.append(_)
     return objects
+
+
+@router.post("/execute-action/{action_alias}",
+             responses={
+                 200: {"description": "Execute action by alias"},
+                 **IncorrectCredentialsException.responses,
+                 **NoCredentialsException.responses,
+             })
+async def execute_action(
+    _bot: Annotated[bool, DEPENDS_BOT],
+    pg_repository: Annotated[AbstractPgRepository, DEPENDS_PG_STAT_REPOSITORY],
+    action_alias: str,
+    arguments: dict[str, Union[str, int, float, bool]] = None,
+):
+    action: Action = monitoring_settings.actions.get(action_alias, None)
+
+    if action is None:
+        raise ActionNotFoundException(action_alias)
+
+    if arguments is None:
+        arguments = dict()
+
+    for step in action.steps:
+        if step.type == Action.Step.Type.sql:
+            await pg_repository.execute_sql(step.query, **arguments)
+        elif step.type == Action.Step.Type.ssh:
+            raise NotImplemented()

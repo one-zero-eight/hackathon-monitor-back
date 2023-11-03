@@ -1,15 +1,18 @@
+from enum import StrEnum
 from pathlib import Path
-from typing import Union
+from typing import Any, Optional
 
 import yaml
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field
+
+from src.config import settings as app_settings
 
 
 class Alert(BaseModel):
     class Rule(BaseModel):
-        alert: str
+        annotations: dict[str, Any]
         expr: str
-        for_: str
+        for_: Optional[str] = Field(None, alias="for")
 
     title: str
     description: str
@@ -23,12 +26,27 @@ class Alert(BaseModel):
 
 class Action(BaseModel):
     class Step(BaseModel):
-        type: str
+        class Type(StrEnum):
+            sql = "sql"
+            ssh = "ssh"
+
+        type: Type
         query: str
+
+    class Argument(BaseModel):
+        class Type(StrEnum):
+            string = "string"
+            int = "int"
+            float = "float"
+            bool = "bool"
+
+        type: Type
+        description: str = ""
+        required: bool = True
 
     title: str
     description: str
-    arguments: dict[str, Union[str, int, float]]
+    arguments: dict[str, Argument]
     steps: list[Step]
 
     # TODO: sqlalchemy check injection in text statement
@@ -53,3 +71,9 @@ class MonitoringConfig(BaseModel):
             actions_config = yaml.safe_load(f)
 
         return cls(alerts=alerts_config["alerts"], actions=actions_config["actions"])
+
+
+settings = MonitoringConfig.from_yamls(
+    alert_path=app_settings.ALERTS_CONFIG_PATH,
+    actions_path=app_settings.ACTIONS_CONFIG_PATH,
+)

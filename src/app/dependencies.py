@@ -12,7 +12,7 @@ __all__ = [
 
 from fastapi import Depends
 
-from src.repositories.pg_stats.abc import AbstractPgStatRepository
+from src.repositories.pg.abc import AbstractPgRepository
 from src.repositories.smtp.abc import AbstractSMTPRepository
 from src.repositories.users import AbstractUserRepository
 from src.storages.sqlalchemy.storage import AbstractSQLAlchemyStorage
@@ -22,7 +22,7 @@ class Dependencies:
     _storage: "AbstractSQLAlchemyStorage"
     _user_repository: "AbstractUserRepository"
     _smtp_repository: "AbstractSMTPRepository"
-    _pg_stat_repository: "AbstractPgStatRepository"
+    _pg_stat_repository: "AbstractPgRepository"
 
     @classmethod
     def get_storage(cls) -> "AbstractSQLAlchemyStorage":
@@ -49,11 +49,11 @@ class Dependencies:
         cls._smtp_repository = smtp_repository
 
     @classmethod
-    def get_pg_stat_repository(cls) -> "AbstractPgStatRepository":
+    def get_pg_stat_repository(cls) -> "AbstractPgRepository":
         return cls._pg_stat_repository
 
     @classmethod
-    def set_pg_stat_repository(cls, pg_stat_repository: "AbstractPgStatRepository"):
+    def set_pg_stat_repository(cls, pg_stat_repository: "AbstractPgRepository"):
         cls._pg_stat_repository = pg_stat_repository
 
 

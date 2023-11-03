@@ -1,4 +1,4 @@
-__all__ = ["AbstractPgStatRepository"]
+__all__ = ["AbstractPgRepository"]
 
 from abc import ABCMeta, abstractmethod
 from typing import TYPE_CHECKING
@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from src.schemas.pg_stats import ViewPgStatActivitySummary, ViewPgStatDatabase, PgStat
 
 
-class AbstractPgStatRepository(metaclass=ABCMeta):
+class AbstractPgRepository(metaclass=ABCMeta):
     # ----------------- CRUD ----------------- #
 
     @abstractmethod
@@ -21,13 +21,13 @@ class AbstractPgStatRepository(metaclass=ABCMeta):
         ...
 
     @abstractmethod
-    async def read_pg_stat_database(self) -> list["ViewPgStatDatabase"]:
-        ...
-
-    @abstractmethod
     async def terminate_pg_backend(self, pid: int) -> bool:
         ...
 
     @abstractmethod
     async def read_pg_stat_summary(self) -> "ViewPgStatActivitySummary":
+        ...
+
+    @abstractmethod
+    async def execute_sql(self, sql: str, /, **binds) -> None:
         ...

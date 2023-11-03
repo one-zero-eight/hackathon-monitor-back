@@ -8,6 +8,7 @@ __all__ = [
     "EmailFlowNotFound",
     "ClientNotFound",
     "DBUserAlreadyExists",
+    "ActionNotFoundException",
     "UserAlreadyHasEmail"
 ]
 
@@ -166,3 +167,17 @@ class DBUserAlreadyExists(ValueError):
             super().__init__("User already exists")
         else:
             super().__init__(f"User with {kwargs} already exists")
+
+
+class ActionNotFoundException(HTTPException):
+    """
+    HTTP_404_NOT_FOUND
+    """
+
+    def __init__(self, action_alias: str):
+        super().__init__(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Action with alias `{action_alias}` not found",
+        )
+
+    responses = {404: {"description": "Action with this id not found"}}

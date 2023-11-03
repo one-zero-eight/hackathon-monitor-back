@@ -1,0 +1,11 @@
+actions:
+    terminate_session:
+        title: Terminate Session
+        description: Terminate a PostgreSQL session by PID.
+        arguments:
+            pid:
+                description: The PID of the session to terminate.
+                type: int
+        steps:
+            - type: sql
+              query: SELECT pg_terminate_backend(:pid)

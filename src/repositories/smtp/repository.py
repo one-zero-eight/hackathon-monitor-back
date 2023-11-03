@@ -13,9 +13,9 @@ from email_validator import validate_email, EmailNotValidError
 
 class SMTPRepository(AbstractSMTPRepository):
     def __init__(self):
-        self._server = smtplib.SMTP(settings.SMTP_SERVER, settings.SMTP_PORT)
+        self._server = smtplib.SMTP(settings.SMTP.SERVER, settings.SMTP.PORT)
         self._server.starttls()
-        self._server.login(settings.SMTP_USERNAME, settings.SMTP_PASSWORD.get_secret_value())
+        self._server.login(settings.SMTP.USERNAME, settings.SMTP.PASSWORD.get_secret_value())
 
     def send(self, message: str, to: str):
         try:
@@ -23,7 +23,7 @@ class SMTPRepository(AbstractSMTPRepository):
             to = valid.normalized
         except EmailNotValidError as e:
             raise ValueError(e)
-        self._server.sendmail(settings.SMTP_USERNAME, to, message)
+        self._server.sendmail(settings.SMTP.USERNAME, to, message)
 
     def send_connect_email(self, email: str, auth_code: str):
         mail = MIMEMultipart("related")
@@ -45,10 +45,10 @@ class SMTPRepository(AbstractSMTPRepository):
         mail.attach(msgHtml)
 
         mail["Subject"] = "Registration in Monitoring Service"
-        mail["From"] = settings.SMTP_USERNAME
+        mail["From"] = settings.SMTP.USERNAME
         mail["To"] = email
 
-        self._server.sendmail(settings.SMTP_USERNAME, email, mail.as_string())
+        self._server.sendmail(settings.SMTP.USERNAME, email, mail.as_string())
 
     def close(self):
         self._server.quit()
