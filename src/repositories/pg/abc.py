@@ -13,7 +13,7 @@ class AbstractPgRepository(metaclass=ABCMeta):
     # ----------------- CRUD ----------------- #
 
     @abstractmethod
-    async def read_pg_stat(self, pg_stat_name: "PgStat", limit: int) -> list[RowMapping]:
+    async def read_pg_stat(self, pg_stat_name: "PgStat", limit: int, offset: int) -> list[RowMapping]:
         ...
 
     @abstractmethod
@@ -30,6 +30,10 @@ class AbstractPgRepository(metaclass=ABCMeta):
 
     @abstractmethod
     async def execute_sql(self, sql: str, /, **binds) -> None:
+        ...
+
+    @abstractmethod
+    async def execute_ssh(self, command: str, /, **binds) -> str:
         ...
 
     @abstractmethod

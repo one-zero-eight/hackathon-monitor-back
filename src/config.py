@@ -35,11 +35,16 @@ class Jwt(BaseModel):
             self.PUBLIC_KEY = self.PUBLIC_KEY_PATH.read_bytes()
 
 
+class Prometheus(BaseModel):
+    URL: str = "http://localhost:9090"
+
+
 class Target(BaseModel):
     DB_URL: SecretStr
     SSH_HOST: str
-    SSH_CREDENTIALS_USERNAME: str
-    SSH_CREDENTIALS_PASSWORD: str
+    SSH_PORT: int = 22
+    SSH_USERNAME: str
+    SSH_PASSWORD: str
 
 
 class Smtp(BaseModel):
@@ -87,7 +92,8 @@ class Settings(BaseSettings):
     AUTH: Auth = Field(default_factory=Auth)
     # SMTP server settings
     SMTP: Smtp = Field(default_factory=Smtp)
-
+    # Prometheus settings
+    PROMETHEUS: Prometheus = Field(default_factory=Prometheus)
     # Security
     CORS_ALLOW_ORIGINS: list[str] = []
 

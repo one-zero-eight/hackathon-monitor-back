@@ -10,7 +10,7 @@ from src.exceptions import ActionNotFoundException
 
 
 @router.post(
-    "/execute-action/{action_alias}",
+    "/execute/{action_alias}",
     responses={
         200: {"description": "Execute action by alias"},
         **IncorrectCredentialsException.responses,
@@ -31,6 +31,11 @@ async def execute_action(
     if arguments is None:
         arguments = dict()
 
+    # ensure all required arguments are provided
+    for argument_name, argument in action.arguments.items():
+        if argument.required and argument_name not in arguments:
+            raise ArgumentRequiredException(argument_name)
+
     for step in action.steps:
         if step.type == Action.Step.Type.sql:
             await pg_repository.execute_sql(step.query, **arguments)
@@ -38,8 +43,12 @@ async def execute_action(
             await pg_repository.execute_ssh(step.query, **arguments)
 
 
+class ActionWithAlias(Action):
+    alias: str
+
+
 @router.get(
-    "/actions/",
+    "/",
     responses={
         200: {"description": "Execute action by alias"},
         **IncorrectCredentialsException.responses,
@@ -48,5 +57,9 @@ async def execute_action(
 )
 async def get_actions(
     _bot: Annotated[bool, DEPENDS_BOT],
-) -> dict[str, Action]:
-    return monitoring_settings.actions
+) -> list[ActionWithAlias]:
+    return [
+        ActionWithAlias(**action.dict(), alias=action_alias)
+        for action_alias, action in
+        monitoring_settings.actions.items()
+    ]

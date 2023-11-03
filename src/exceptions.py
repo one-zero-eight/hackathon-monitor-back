@@ -181,3 +181,17 @@ class ActionNotFoundException(HTTPException):
         )
 
     responses = {404: {"description": "Action with this alias not found"}}
+
+
+class ArgumentRequiredException(HTTPException):
+    """
+    HTTP_400_BAD_REQUEST
+    """
+
+    def __init__(self, argument_name: str):
+        super().__init__(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Argument `{argument_name}` is required",
+        )
+
+    responses = {400: {"description": "Argument is required"}}

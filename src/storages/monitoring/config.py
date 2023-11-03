@@ -49,9 +49,6 @@ class Action(BaseModel):
     arguments: dict[str, Argument] = None
     steps: list[Step]
 
-    # TODO: sqlalchemy check injection in text statement
-
-
 class Graph(BaseModel):
     title: str
     graphana_url: str

@@ -93,8 +93,9 @@ async def get_statistics(
     # user_repository: Annotated[AbstractUserRepository, DEPENDS_USER_REPOSITORY],
     pg_repository: Annotated[AbstractPgRepository, DEPENDS_PG_STAT_REPOSITORY],
     limit: int = 20,
+    offset: int = 0,
     stat_name: PgStat = PgStat.pg_stat_activity,
-) -> list[dict]:
+) -> list[dict] | None:
     """
     Return rows from pg_stat view
 
@@ -102,8 +103,9 @@ async def get_statistics(
     https://www.postgresql.org/docs/current/monitoring-stats.html#MONITORING-PG-STAT-ACTIVITY-VIEW
     """
     # _user = await user_repository.read(user_id)
-    pg_stat_activity = await pg_repository.read_pg_stat(pg_stat_name=stat_name, limit=limit)
-
+    pg_stat_activity = await pg_repository.read_pg_stat(pg_stat_name=stat_name, limit=limit, offset=offset)
+    if pg_stat_activity is None:
+        return None
     objects = []
     for r in pg_stat_activity:
         _ = dict()
