@@ -41,6 +41,9 @@ class Settings(BaseSettings):
     # PostgreSQL database connection URL
     DB_URL: SecretStr
 
+    # Target DB for monitoring
+    TARGET_DB_URL: SecretStr
+
     # Security
     CORS_ALLOW_ORIGINS: list[str] = []
 
@@ -50,6 +53,7 @@ class Settings(BaseSettings):
     AUTH_ALLOWED_DOMAINS: list[str] = ["innohassle.ru", "api.innohassle.ru", "localhost"]
 
     # SMTP server settings
+    SMTP_ENABLE: bool = False
     SMTP_SERVER: str = "mail.innopolis.ru"
     SMTP_PORT: int = 587
     SMTP_USERNAME: str

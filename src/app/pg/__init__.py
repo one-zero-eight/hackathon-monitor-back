@@ -5,5 +5,5 @@ from fastapi import APIRouter
 router = APIRouter(prefix="/pg", tags=["Postgres"])
 
 # Register all schemas and routes
-import src.schemas.users  # noqa: E402, F401
-import src.app.users.routes  # noqa: E402, F401
+import src.schemas.pg_stats  # noqa: E402, F401
+import src.app.pg.routes  # noqa: E402, F401
