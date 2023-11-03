@@ -1,3 +1,4 @@
+import os
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
@@ -18,7 +19,7 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-from src.storages.sqlalchemy.models import Base
+from src.storages.sqlalchemy.models import Base  # noqa: E402
 
 target_metadata = Base.metadata
 
@@ -27,6 +28,9 @@ target_metadata = Base.metadata
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
+
+if os.environ.get("ALEMBIC_DB_URL", None):
+    config.set_main_option("sqlalchemy.url", os.environ["ALEMBIC_DB_URL"])
 
 
 def run_migrations_offline() -> None:
