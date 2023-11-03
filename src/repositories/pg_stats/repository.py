@@ -25,7 +25,6 @@ class PgStatRepository(AbstractPgStatRepository):
         async with self._create_session() as session:
             statement = text(f"""SELECT pg_terminate_backend({pid}) FROM pg_stat_activity""")
             termination_result = (await session.execute(statement)).first()[0]
-            print(termination_result)
             if not termination_result:
                 return TerminatePgBackendResult(
                     success=termination_result, detail=f"Impossible to kill session with PID {pid}."
