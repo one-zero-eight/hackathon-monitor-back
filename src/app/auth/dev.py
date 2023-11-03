@@ -25,20 +25,38 @@ if enabled:
 
     @router.get("/dev/login", include_in_schema=False)
     async def dev_login(
+        telegram_id: int,
         user_repository: Annotated[AbstractUserRepository, DEPENDS_USER_REPOSITORY],
         return_to: str = "/",
-        name="Alex Alex",
+        telegram_first_name="Alex",
     ):
         ensure_allowed_return_to(return_to)
-        user = await user_repository.create_or_update(CreateUser(name=name))
-        token = TokenRepository.create_access_token(user.id)
+        existing_user = await user_repository.read(telegram_id)
+
+        if existing_user:
+            token = TokenRepository.create_access_token(existing_user.telegram_id)
+            return redirect_with_token(return_to, token)
+        scheme = CreateUser(
+            telegram_first_name=telegram_first_name,
+        )
+
+        user = await user_repository.create(telegram_id, user=scheme)
+        token = TokenRepository.create_access_token(user.telegram_id)
         return redirect_with_token(return_to, token)
 
 
     @router.get("/dev/token")
     async def get_dev_token(
         user_repository: Annotated[AbstractUserRepository, DEPENDS_USER_REPOSITORY],
-        name="Alex Alex",
+        telegram_id: int,
+        telegram_first_name="Alex",
     ) -> str:
-        user = await user_repository.create_or_update(CreateUser(name=name))
-        return TokenRepository.create_access_token(user.id)
+
+        existing_user = await user_repository.read(telegram_id)
+        if existing_user:
+            return TokenRepository.create_access_token(existing_user.telegram_id)
+        scheme = CreateUser(
+            telegram_first_name=telegram_first_name,
+        )
+        user = await user_repository.create(telegram_id, user=scheme)
+        return TokenRepository.create_access_token(user.telegram_id)

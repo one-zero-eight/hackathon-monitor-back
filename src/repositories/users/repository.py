@@ -22,7 +22,7 @@ def _generate_auth_code() -> str:
 
 
 async def _get_available_user_ids(session: AsyncSession, count: int = 1) -> list[int] | int:
-    q = select(User.id)
+    q = select(User.telegram_id)
     excluded_ids = set(await session.scalars(q))
     excluded_ids: set[int]
     available_ids = set()
@@ -44,31 +44,16 @@ class UserRepository(AbstractUserRepository):
 
     # ------------------ CRUD ------------------ #
 
-    async def create_or_update(self, user: CreateUser) -> ViewUser:
+    async def create(self, telegram_id: int, user: CreateUser) -> ViewUser:
         async with self._create_session() as session:
-            # TODO: Check if user with this email already exists
-            # q = select(User)  # .where(User.email == user.email)
-            # existing_user = await session.scalar(q)
-            # if existing_user:
-            #     q = (
-            #         update(User)
-            #         .where(User.id == existing_user.id)
-            #         .values(**user.model_dump(exclude_unset=True))
-            #         .returning(User)
-            #     )
-            #     existing_user = await session.scalar(q)
-            #     await session.commit()
-            #     return ViewUser.model_validate(existing_user)
-            # else:
-            user_id = await _get_available_user_ids(session)
-            q = insert(User).values(id=user_id, **user.model_dump()).returning(User)
+            q = insert(User).values(telegram_id=telegram_id, **user.model_dump()).returning(User)
             new_user = await session.scalar(q)
             await session.commit()
             return ViewUser.model_validate(new_user)
 
     async def read(self, id_: int) -> Optional["ViewUser"]:
         async with self._create_session() as session:
-            q = select(User).where(User.id == id_)
+            q = select(User).where(User.telegram_id == id_)
             user = await session.scalar(q)
             if user:
                 return ViewUser.model_validate(user, from_attributes=True)
@@ -84,7 +69,7 @@ class UserRepository(AbstractUserRepository):
 
     async def start_connect_email(self, user_id: int, email: str) -> "ViewEmailFlow":
         async with self._create_session() as session:
-            q = select(User).where(User.id == user_id)
+            q = select(User).where(User.telegram_id == user_id)
             _user = await session.scalar(q)
             if _user:
                 q = (
@@ -106,7 +91,7 @@ class UserRepository(AbstractUserRepository):
             if email_flow:
                 q = (
                     update(User)
-                    .where(User.id == email_flow.user_id)
+                    .where(User.telegram_id == email_flow.user_id)
                     .values(email=email_flow.email, email_verified=True)
                 )
                 await session.execute(q)

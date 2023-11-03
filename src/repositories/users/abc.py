@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 class AbstractUserRepository(metaclass=ABCMeta):
     # ----------------- CRUD ----------------- #
     @abstractmethod
-    async def create_or_update(self, user: "CreateUser") -> "ViewUser":
+    async def create(self, telegram_id: int, user: "CreateUser") -> "ViewUser":
         ...
 
     @abstractmethod
@@ -18,7 +18,7 @@ class AbstractUserRepository(metaclass=ABCMeta):
         ...
 
     @abstractmethod
-    async def read_by_email(self, innopolis_email: str) -> "ViewUser":
+    async def read_by_email(self, email: str) -> "ViewUser":
         ...
 
     @abstractmethod

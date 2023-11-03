@@ -7,9 +7,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer, APIKeyCoo
 
 from src.repositories.tokens import TokenRepository
 from src.config import settings
-from src.exceptions import (
-    NoCredentialsException, IncorrectCredentialsException
-)
+from src.exceptions import NoCredentialsException, IncorrectCredentialsException
 
 bearer_scheme = HTTPBearer(
     scheme_name="Bearer",
@@ -51,6 +49,8 @@ async def verify_bot_token(
 
     if not TokenRepository.verify_bot_token(token):
         raise IncorrectCredentialsException()
+
+    return True
 
 
 async def get_current_user_id(

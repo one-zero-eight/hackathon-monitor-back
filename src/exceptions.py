@@ -2,6 +2,7 @@ __all__ = [
     "NoCredentialsException",
     "IncorrectCredentialsException",
     "NotEnoughPermissionsException",
+    "UserAlreadyExistsException",
     "InvalidRedirectUri",
     "UserNotFound",
     "EmailFlowNotFound",
@@ -124,6 +125,20 @@ class ClientNotFound(HTTPException):
         )
 
     responses = {404: {"description": "Client with this id not found"}}
+
+
+class UserAlreadyExistsException(HTTPException):
+    """
+    HTTP_409_CONFLICT
+    """
+
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=self.responses[409]["description"],
+        )
+
+    responses = {409: {"description": "User already exists"}}
 
 
 class DBUserAlreadyExists(ValueError):

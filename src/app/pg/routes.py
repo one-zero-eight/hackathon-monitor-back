@@ -36,7 +36,7 @@ async def get_statistics(
 )
 async def kill_session(
     user_id: int,
-    pid: int, # noqa
+    pid: int,  # noqa
     _verify_bot: Annotated[bool, DEPENDS_BOT],
     user_repository: Annotated[AbstractUserRepository, DEPENDS_USER_REPOSITORY],
 ):

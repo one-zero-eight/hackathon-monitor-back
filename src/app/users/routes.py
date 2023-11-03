@@ -7,11 +7,11 @@ from src.app.dependencies import DEPENDS_SMTP_REPOSITORY, DEPENDS_USER_REPOSITOR
 from src.app.users import router
 from src.exceptions import (
     IncorrectCredentialsException,
-    NoCredentialsException,
+    NoCredentialsException, UserAlreadyExistsException,
 )
 from src.repositories.smtp.abc import AbstractSMTPRepository
 from src.repositories.users import AbstractUserRepository
-from src.schemas.users import ViewUser
+from src.schemas.users import ViewUser, CreateUser
 
 
 @router.get(
@@ -56,6 +56,28 @@ async def get_user(
 
 
 # TODO: Add registration with Telegram
+@router.post(
+    "/register-via-telegram",
+    tags=["Telegram"],
+    responses={
+        200: {"description": "Start registration via Telegram"},
+        **IncorrectCredentialsException.responses,
+        **NoCredentialsException.responses,
+    },
+)
+async def register_via_telegram(
+    telegram_id: int,
+    user: CreateUser,
+    user_repository: Annotated[AbstractUserRepository, DEPENDS_USER_REPOSITORY],
+    _verify_bot: Annotated[bool, DEPENDS_BOT],
+):
+    """
+    Registration via Telegram
+    """
+    existing = await user_repository.read(telegram_id)
+    if existing:
+        raise UserAlreadyExistsException()
+    await user_repository.create(telegram_id, user)
 
 
 @router.get("/connect-email", tags=["Email"])

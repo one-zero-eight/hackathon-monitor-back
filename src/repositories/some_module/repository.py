@@ -47,7 +47,7 @@ class SomeModuleRepository(AbstractSomeModuleRepository):
 
     async def read(self, id: int) -> ViewSomeScheme:
         async with self._create_session() as session:
-            q = select(SomeModel).where(SomeModel.id == id)
+            q = select(SomeModel).where(SomeModel.telegram_id == id)
             if get_options:
                 q = q.options(*get_options)
             obj = await session.scalar(q)
@@ -70,7 +70,7 @@ class SomeModuleRepository(AbstractSomeModuleRepository):
 
             q = select(SomeModel).where(
                 or_(
-                    *[SomeModel.id == id for id in ids],
+                    *[SomeModel.telegram_id == id for id in ids],
                 )
             )
 
@@ -82,7 +82,7 @@ class SomeModuleRepository(AbstractSomeModuleRepository):
 
     async def update(self, id_: int, data: UpdateSomeScheme):
         async with self._create_session() as session:
-            q = update(SomeModel).where(SomeModel.id == id_).values(**data.model_dump()).returning(SomeModel)
+            q = update(SomeModel).where(SomeModel.telegram_id == id_).values(**data.model_dump()).returning(SomeModel)
 
             if get_options:
                 q = q.options(*get_options)
