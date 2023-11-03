@@ -4,7 +4,7 @@ from abc import ABCMeta, abstractmethod
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from src.schemas.users import ViewUser, CreateUser
+    from src.schemas.users import ViewUser, CreateUser, ViewEmailFlow
 
 
 class AbstractUserRepository(metaclass=ABCMeta):
@@ -19,4 +19,12 @@ class AbstractUserRepository(metaclass=ABCMeta):
 
     @abstractmethod
     async def read_by_email(self, innopolis_email: str) -> "ViewUser":
+        ...
+
+    @abstractmethod
+    async def start_connect_email(self, id_: int, email: str) -> "ViewEmailFlow":
+        ...
+
+    @abstractmethod
+    async def finish_connect_email(self, email: str, auth_code: str):
         ...

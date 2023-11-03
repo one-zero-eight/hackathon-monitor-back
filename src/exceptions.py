@@ -4,6 +4,7 @@ __all__ = [
     "NotEnoughPermissionsException",
     "InvalidRedirectUri",
     "UserNotFound",
+    "EmailFlowNotFound",
     "ClientNotFound",
     "DBUserAlreadyExists",
 ]
@@ -95,6 +96,20 @@ class UserNotFound(HTTPException):
         )
 
     responses = {404: {"description": "User with this id not found"}}
+
+
+class EmailFlowNotFound(HTTPException):
+    """
+    HTTP_404_NOT_FOUND
+    """
+
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=self.responses[404]["description"],
+        )
+
+    responses = {404: {"description": "EmailFlow with this pair (user_id, auth_code) not found"}}
 
 
 class ClientNotFound(HTTPException):

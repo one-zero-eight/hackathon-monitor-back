@@ -1,4 +1,4 @@
-__all__ = ["get_current_user_id"]
+__all__ = ["get_current_user_id", "verify_bot_token"]
 
 from typing import Optional
 
@@ -8,7 +8,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer, APIKeyCoo
 from src.repositories.tokens import TokenRepository
 from src.config import settings
 from src.exceptions import (
-    NoCredentialsException,
+    NoCredentialsException, IncorrectCredentialsException
 )
 
 bearer_scheme = HTTPBearer(
@@ -35,6 +35,22 @@ async def get_access_token(
         return bearer.credentials
     elif cookie:
         return cookie
+
+
+async def verify_bot_token(
+    token: Optional[str] = Depends(get_access_token),
+) -> bool:
+    """
+    :raises NoCredentialsException: if token is not provided
+    :raises IncorrectCredentialsException: if token is invalid
+    :param token: JWT token from header or cookie
+    :return: True if token is valid
+    """
+    if not token:
+        raise NoCredentialsException()
+
+    if not TokenRepository.verify_bot_token(token):
+        raise IncorrectCredentialsException()
 
 
 async def get_current_user_id(

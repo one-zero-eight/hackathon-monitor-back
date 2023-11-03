@@ -1,6 +1,7 @@
 __all__ = ["TokenRepository"]
 
 from datetime import timedelta, datetime
+from hmac import compare_digest
 
 from authlib.jose import jwt, JoseError
 
@@ -51,3 +52,7 @@ class TokenRepository(AbstractTokenRepository):
             expires_delta=timedelta(days=90),
         )
         return access_token
+
+    @classmethod
+    def verify_bot_token(cls, token: str) -> bool:
+        return compare_digest(token, settings.BOT_TOKEN)
