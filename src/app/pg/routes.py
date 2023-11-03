@@ -1,4 +1,4 @@
-from typing import Annotated, Optional, Union
+from typing import Annotated, Optional
 
 from src.app.dependencies import DEPENDS_BOT, DEPENDS_PG_STAT_REPOSITORY
 from src.app.pg import router
@@ -8,8 +8,6 @@ from src.exceptions import (
 )
 from src.repositories.pg import AbstractPgRepository
 from src.schemas.pg_stats import ViewPgStatActivity, ViewPgStatActivitySummary, PgStat
-from src.storages.monitoring.config import settings as monitoring_settings, Action
-from src.exceptions import ActionNotFoundException
 
 from pydantic import BaseModel, ConfigDict
 
@@ -54,9 +52,7 @@ async def terminate_session(
     success = await pg_repository.terminate_pg_backend(pid)
 
     if not success:
-        return PgTerminateSessionResult(
-            success=success, detail=f"Impossible to kill session with PID {pid}."
-        )
+        return PgTerminateSessionResult(success=success, detail=f"Impossible to kill session with PID {pid}.")
     return PgTerminateSessionResult(success=success)
 
 
@@ -78,20 +74,19 @@ async def get_statistics_summary(
     pg_stat_activity = await pg_repository.read_pg_stat_summary()
 
     if pg_stat_activity:
-        return PgStatActivitySummaryResult(
-            success=True, process_count_by_state=pg_stat_activity
-        )
+        return PgStatActivitySummaryResult(success=True, process_count_by_state=pg_stat_activity)
 
-    return PgStatActivitySummaryResult(
-        success=False, detail="No data found"
-    )
+    return PgStatActivitySummaryResult(success=False, detail="No data found")
 
 
-@router.get("/stat-{stat_name}", responses={
-    200: {"description": "Current database statistics by name"},
-    **IncorrectCredentialsException.responses,
-    **NoCredentialsException.responses,
-})
+@router.get(
+    "/stat-{stat_name}",
+    responses={
+        200: {"description": "Current database statistics by name"},
+        **IncorrectCredentialsException.responses,
+        **NoCredentialsException.responses,
+    },
+)
 async def get_statistics(
     # user_id: int,
     _verify_bot: Annotated[bool, DEPENDS_BOT],
@@ -123,30 +118,3 @@ async def get_statistics(
                 _[key] = str(v)
         objects.append(_)
     return objects
-
-
-@router.post("/execute-action/{action_alias}",
-             responses={
-                 200: {"description": "Execute action by alias"},
-                 **IncorrectCredentialsException.responses,
-                 **NoCredentialsException.responses,
-             })
-async def execute_action(
-    _bot: Annotated[bool, DEPENDS_BOT],
-    pg_repository: Annotated[AbstractPgRepository, DEPENDS_PG_STAT_REPOSITORY],
-    action_alias: str,
-    arguments: dict[str, Union[str, int, float, bool]] = None,
-):
-    action: Action = monitoring_settings.actions.get(action_alias, None)
-
-    if action is None:
-        raise ActionNotFoundException(action_alias)
-
-    if arguments is None:
-        arguments = dict()
-
-    for step in action.steps:
-        if step.type == Action.Step.Type.sql:
-            await pg_repository.execute_sql(step.query, **arguments)
-        elif step.type == Action.Step.Type.ssh:
-            raise NotImplemented()
