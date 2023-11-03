@@ -46,7 +46,7 @@ class Action(BaseModel):
 
     title: str
     description: str
-    arguments: dict[str, Argument]
+    arguments: dict[str, Argument] = None
     steps: list[Step]
 
     # TODO: sqlalchemy check injection in text statement

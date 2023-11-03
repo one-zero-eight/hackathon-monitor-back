@@ -9,7 +9,7 @@ __all__ = [
     "ClientNotFound",
     "DBUserAlreadyExists",
     "ActionNotFoundException",
-    "UserAlreadyHasEmail"
+    "UserAlreadyHasEmail",
 ]
 
 from typing import Optional
@@ -180,4 +180,4 @@ class ActionNotFoundException(HTTPException):
             detail=f"Action with alias `{action_alias}` not found",
         )
 
-    responses = {404: {"description": "Action with this id not found"}}
+    responses = {404: {"description": "Action with this alias not found"}}

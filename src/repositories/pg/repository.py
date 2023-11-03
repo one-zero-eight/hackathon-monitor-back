@@ -33,7 +33,7 @@ class PgRepository(AbstractPgRepository):
 
     async def read_total_backends_count(self) -> int:
         async with self._create_session() as session:
-            statement = text(f"""SELECT COUNT(*) FROM pg_catalog.pg_stat_activity""")
+            statement = text("""SELECT COUNT(*) FROM pg_catalog.pg_stat_activity""")
             total_backends_count = (await session.execute(statement)).scalar()
 
             if total_backends_count:
@@ -52,7 +52,7 @@ class PgRepository(AbstractPgRepository):
 
     async def read_pg_stat_summary(self) -> ViewPgStatActivitySummary:
         async with self._create_session() as session:
-            statement = text(f"""SELECT state, COUNT(*) as count FROM pg_stat_activity GROUP BY state;""")
+            statement = text("""SELECT state, COUNT(*) as count FROM pg_stat_activity GROUP BY state;""")
             pg_stat_database = (await session.execute(statement)).fetchall()
 
             if pg_stat_database:
@@ -75,12 +75,19 @@ class PgRepository(AbstractPgRepository):
 
         client = paramiko.client.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        import jinja2
+
         # bind params
+        import jinja2
+
         command_template = jinja2.Environment(autoescape=True).from_string(command)
+        binds.update({"password": settings.TARGET.SSH_CREDENTIALS_PASSWORD})
         binded = command_template.render(**binds)
-        client.connect(settings.TARGET.SSH_HOST, username=settings.TARGET.SSH_CREDENTIALS_USERNAME,
-                       password=settings.TARGET.SSH_CREDENTIALS_PASSWORD)  # username, password
+
+        client.connect(
+            settings.TARGET.SSH_HOST,
+            username=settings.TARGET.SSH_CREDENTIALS_USERNAME,
+            password=settings.TARGET.SSH_CREDENTIALS_PASSWORD,
+        )
         _stdin, _stdout, _stderr = client.exec_command(binded)
 
         if _stderr:

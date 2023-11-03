@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from sqlalchemy import RowMapping
 
 if TYPE_CHECKING:
-    from src.schemas.pg_stats import ViewPgStatActivitySummary, ViewPgStatDatabase, PgStat
+    from src.schemas.pg_stats import ViewPgStatActivitySummary, PgStat
 
 
 class AbstractPgRepository(metaclass=ABCMeta):
@@ -30,4 +30,8 @@ class AbstractPgRepository(metaclass=ABCMeta):
 
     @abstractmethod
     async def execute_sql(self, sql: str, /, **binds) -> None:
+        ...
+
+    @abstractmethod
+    async def execute_ssh(self, command: str, /, **binds) -> str:
         ...

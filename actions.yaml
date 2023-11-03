@@ -9,3 +9,12 @@ actions:
         steps:
             - type: sql
               query: SELECT pg_terminate_backend(:pid)
+
+    restart_db:
+        title: Restart Database
+        description: Activate checkpoint and then restart database.
+        steps:
+            - type: sql
+              query: CHECKPOINT;
+            - type: ssh
+              query: echo {{ password }} | sudo -S systemctl restart postgresql

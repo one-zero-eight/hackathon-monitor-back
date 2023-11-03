@@ -35,7 +35,7 @@ async def execute_action(
         if step.type == Action.Step.Type.sql:
             await pg_repository.execute_sql(step.query, **arguments)
         elif step.type == Action.Step.Type.ssh:
-            raise NotImplementedError()
+            await pg_repository.execute_ssh(step.query, **arguments)
 
 
 @router.get(
