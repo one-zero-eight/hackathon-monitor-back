@@ -66,7 +66,6 @@ async def get_user(
     },
 )
 async def register_via_telegram(
-    telegram_id: int,
     user: CreateUser,
     user_repository: Annotated[AbstractUserRepository, DEPENDS_USER_REPOSITORY],
     _verify_bot: Annotated[bool, DEPENDS_BOT],
@@ -74,13 +73,13 @@ async def register_via_telegram(
     """
     Registration via Telegram
     """
-    existing = await user_repository.read(telegram_id)
+    existing = await user_repository.read(user.telegram_id)
     if existing:
         raise UserAlreadyExistsException()
-    await user_repository.create(telegram_id, user)
+    await user_repository.create(user)
 
 
-@router.get("/connect-email", tags=["Email"])
+@router.post("/connect-email", tags=["Email"])
 async def connect_email(
     email: str,
     user_id: int,

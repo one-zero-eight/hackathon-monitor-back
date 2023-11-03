@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 class AbstractUserRepository(metaclass=ABCMeta):
     # ----------------- CRUD ----------------- #
     @abstractmethod
-    async def create(self, telegram_id: int, user: "CreateUser") -> "ViewUser":
+    async def create(self, user: "CreateUser") -> "ViewUser":
         ...
 
     @abstractmethod

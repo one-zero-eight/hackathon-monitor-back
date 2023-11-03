@@ -8,6 +8,7 @@ __all__ = [
     "EmailFlowNotFound",
     "ClientNotFound",
     "DBUserAlreadyExists",
+    "UserAlreadyHasEmail"
 ]
 
 from typing import Optional
@@ -139,6 +140,20 @@ class UserAlreadyExistsException(HTTPException):
         )
 
     responses = {409: {"description": "User already exists"}}
+
+
+class UserAlreadyHasEmail(HTTPException):
+    """
+    HTTP_409_CONFLICT
+    """
+
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=self.responses[409]["description"],
+        )
+
+    responses = {409: {"description": "User already has this email"}}
 
 
 class DBUserAlreadyExists(ValueError):

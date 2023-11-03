@@ -18,6 +18,7 @@ class ViewUser(BaseModel):
 
 
 class CreateUser(BaseModel):
+    telegram_id: int
     telegram_first_name: str
     telegram_last_name: Optional[str] = None
     telegram_username: Optional[str] = None

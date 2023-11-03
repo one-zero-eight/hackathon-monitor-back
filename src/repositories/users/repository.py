@@ -1,13 +1,12 @@
 __all__ = ["UserRepository"]
 
 import random
-import secrets
 from typing import Optional
 
 from sqlalchemy import select, update, insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.exceptions import UserNotFound, EmailFlowNotFound
+from src.exceptions import UserNotFound, EmailFlowNotFound, UserAlreadyHasEmail
 from src.repositories.users.abc import AbstractUserRepository
 from src.schemas.users import ViewUser, CreateUser, ViewEmailFlow
 from src.storages.sqlalchemy.models.users import User, EmailFlow
@@ -18,7 +17,8 @@ MAX_USER_ID = 999_999
 
 
 def _generate_auth_code() -> str:
-    return secrets.token_urlsafe(6)
+    # return random 6-digit code
+    return str(random.randint(100_000, 999_999))
 
 
 async def _get_available_user_ids(session: AsyncSession, count: int = 1) -> list[int] | int:
@@ -44,9 +44,9 @@ class UserRepository(AbstractUserRepository):
 
     # ------------------ CRUD ------------------ #
 
-    async def create(self, telegram_id: int, user: CreateUser) -> ViewUser:
+    async def create(self, user: CreateUser) -> ViewUser:
         async with self._create_session() as session:
-            q = insert(User).values(telegram_id=telegram_id, **user.model_dump()).returning(User)
+            q = insert(User).values(**user.model_dump()).returning(User)
             new_user = await session.scalar(q)
             await session.commit()
             return ViewUser.model_validate(new_user)
@@ -72,9 +72,12 @@ class UserRepository(AbstractUserRepository):
             q = select(User).where(User.telegram_id == user_id)
             _user = await session.scalar(q)
             if _user:
+                if _user.email == email:
+                    raise UserAlreadyHasEmail()
+
                 q = (
                     insert(EmailFlow)
-                    .values(user_id=user_id, email=email, auth_code=_generate_auth_code)
+                    .values(user_id=user_id, email=email, auth_code=_generate_auth_code())
                     .returning(EmailFlow)
                 )
 

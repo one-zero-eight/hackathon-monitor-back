@@ -37,10 +37,11 @@ if enabled:
             token = TokenRepository.create_access_token(existing_user.telegram_id)
             return redirect_with_token(return_to, token)
         scheme = CreateUser(
+            telegram_id=telegram_id,
             telegram_first_name=telegram_first_name,
         )
 
-        user = await user_repository.create(telegram_id, user=scheme)
+        user = await user_repository.create(user=scheme)
         token = TokenRepository.create_access_token(user.telegram_id)
         return redirect_with_token(return_to, token)
 
@@ -56,7 +57,8 @@ if enabled:
         if existing_user:
             return TokenRepository.create_access_token(existing_user.telegram_id)
         scheme = CreateUser(
+            telegram_id=telegram_id,
             telegram_first_name=telegram_first_name,
         )
-        user = await user_repository.create(telegram_id, user=scheme)
+        user = await user_repository.create(user=scheme)
         return TokenRepository.create_access_token(user.telegram_id)

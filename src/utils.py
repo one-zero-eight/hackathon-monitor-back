@@ -8,14 +8,17 @@ from src.config import settings
 async def setup_repositories():
     from src.repositories.users import UserRepository
     from src.storages.sqlalchemy import SQLAlchemyStorage
+    from src.repositories.smtp import SMTPRepository
     from src.app.dependencies import Dependencies
 
     # ------------------- Repositories Dependencies -------------------
     storage = SQLAlchemyStorage.from_url(settings.DB_URL.get_secret_value())
     user_repository = UserRepository(storage)
+    smtp_repository = SMTPRepository()
 
     Dependencies.set_storage(storage)
     Dependencies.set_user_repository(user_repository)
+    Dependencies.set_smtp_repository(smtp_repository)
 
     # await storage.create_all()
 
