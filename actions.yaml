@@ -1,6 +1,6 @@
 actions:
     terminate_session:
-        title: Завершить сеанс
+        title: Закрыть сессию по PID
         description: Завершить сеанс PostgreSQL по PID.
         arguments:
             pid:

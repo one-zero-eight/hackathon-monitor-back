@@ -1,6 +1,7 @@
 import datetime
 from typing import Any, Annotated
 
+from fastapi import BackgroundTasks
 from pydantic import BaseModel, ConfigDict
 
 from src.app.alerts import router
@@ -68,6 +69,7 @@ class AlertManagerRequest(BaseModel):
 async def webhook(
     alert_repository: Annotated[AbstractAlertRepository, DEPENDS_ALERT_REPOSITORY],
     data: AlertManagerRequest,
+    background_tasks: BackgroundTasks,
 ):
     for alert in data.alerts:
         # get alertname
@@ -78,7 +80,7 @@ async def webhook(
         try:
             target_alias = alert["labels"]["target"]
             target = settings.TARGETS[target_alias]
-            receivers = target.RECEIVERS
+            receivers = target.ADMINS
 
             # save alert
             mapped_alert = await alert_repository.create_alert(
@@ -91,6 +93,14 @@ async def webhook(
             )
             # start mailing
             await alert_repository.start_delivery(mapped_alert.id, receivers)
+            # if settings.SMTP_ENABLED:
+            #     from src.app.dependencies import Dependencies
+            #
+            #     smtp_repository = Dependencies.get_smtp_repository()
+            #
+            #     # send email
+            #     background_tasks.add_task()
+
         except KeyError:
             continue
 

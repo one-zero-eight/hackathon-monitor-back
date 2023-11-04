@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Optional
 
 import yaml
-from pydantic import SecretStr, model_validator, field_validator, BaseModel, Field, ConfigDict
+from pydantic import SecretStr, model_validator, field_validator, BaseModel, Field, ConfigDict, EmailStr
 
 
 class Environment(StrEnum):
@@ -31,9 +31,10 @@ class Target(BaseModel):
     SSH_PORT: int = 22
     SSH_USERNAME: str
     SSH_PASSWORD: str
-    RECEIVERS: list[int] = Field(default_factory=list)
+    ADMINS: list[int] = Field(default_factory=list)
+    EMAILS: list[EmailStr] = Field(default_factory=list)
 
-    @field_validator("RECEIVERS", mode="before")
+    @field_validator("ADMINS", mode="before")
     @classmethod
     def parse_receivers(cls, value):
         if isinstance(value, str):

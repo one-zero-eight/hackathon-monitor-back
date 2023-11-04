@@ -14,8 +14,8 @@ targets:
         ssh_port: 22
         ssh_username: admin
         ssh_password: admin
-        receivers: [1111111,2222222,333333333]
-
+        admins: [1111111,2222222,333333333]
+        emails: ["a.a@gmail.com"]
 # ---------- Prometheus settings ----- #
 prometheus:
     host: http://10.10.10.10:9090

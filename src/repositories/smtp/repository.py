@@ -50,5 +50,11 @@ class SMTPRepository(AbstractSMTPRepository):
 
         self._server.sendmail(settings.SMTP.USERNAME, email, mail.as_string())
 
+    def send_alert_message(
+        self,
+        email: str,
+    ):
+        ...
+
     def close(self):
         self._server.quit()
