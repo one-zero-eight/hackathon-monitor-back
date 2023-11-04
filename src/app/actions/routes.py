@@ -1,10 +1,12 @@
 from types import NoneType
 from typing import Annotated
 
+from fastapi import Query
 from pydantic import BaseModel, create_model
 
 from src.app.actions import router
 from src.app.dependencies import DEPENDS_BOT, DEPENDS_PG_STAT_REPOSITORY
+from src.config import settings, Target
 from src.exceptions import (
     ActionNotFoundException,
     IncorrectCredentialsException,
@@ -15,7 +17,7 @@ from src.repositories.pg import AbstractPgRepository
 from src.storages.monitoring.config import settings as monitoring_settings, Action
 
 
-async def _execute_action(pg_repository: AbstractPgRepository, action_alias: str, **arguments):
+async def _execute_action(pg_repository: AbstractPgRepository, action_alias: str, target: Target, **arguments):
     action = monitoring_settings.actions.get(action_alias)
     # ensure all required arguments are provided
     for argument_name, argument in action.arguments.items():
@@ -24,9 +26,9 @@ async def _execute_action(pg_repository: AbstractPgRepository, action_alias: str
 
     for step in action.steps:
         if step.type == Action.Step.Type.sql:
-            await pg_repository.execute_sql(step.query, binds=arguments)
+            await pg_repository.execute_sql(step.query, binds=arguments, target=target)
         elif step.type == Action.Step.Type.ssh:
-            await pg_repository.execute_ssh(step.query, binds=arguments)
+            await pg_repository.execute_ssh(step.query, binds=arguments, target=target)
 
 
 # generate routes for each action
@@ -43,9 +45,13 @@ for action_alias, action in monitoring_settings.actions.items():
             _bot: Annotated[bool, DEPENDS_BOT],
             pg_repository: Annotated[AbstractPgRepository, DEPENDS_PG_STAT_REPOSITORY],
             arguments: _Arguments,
+            target_alias: str = Query(...),
         ):
             arguments: BaseModel
-            return await _execute_action(pg_repository, binded_action_alias, **arguments.model_dump(exclude_none=True))
+            target: Target = settings.TARGETS[target_alias]
+            return await _execute_action(
+                pg_repository, binded_action_alias, **arguments.model_dump(exclude_none=True), target=target
+            )
 
         return execute_action
 

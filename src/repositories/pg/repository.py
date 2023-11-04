@@ -6,10 +6,11 @@ import paramiko
 from sqlalchemy import Row
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import text
+from sqlalchemy.ext.asyncio import create_async_engine
 
 from src.config import settings, Target
 from src.repositories.pg.abc import AbstractPgRepository
-from src.schemas.pg_stats import ViewPgStatActivity, ViewPgStatActivitySummary, PgStat
+from src.schemas.pg_stats import ViewPgStatActivitySummary
 from src.storages.sqlalchemy import AbstractSQLAlchemyStorage
 
 
@@ -38,8 +39,10 @@ class PgRepository(AbstractPgRepository):
     def _create_session(self) -> AsyncSession:
         return self.storage.create_session()
 
-    async def read_pg_stat_summary(self) -> ViewPgStatActivitySummary:
-        async with self._create_session() as session:
+    async def read_pg_stat_summary(self, target: Target) -> ViewPgStatActivitySummary:
+        engine = create_async_engine(target.DB_URL.get_secret_value(), pool_recycle=3600)
+
+        async with engine.connect() as session:
             statement = text("""SELECT state, COUNT(*) as count FROM pg_stat_activity GROUP BY state;""")
             pg_stat_database = (await session.execute(statement)).fetchall()
 
@@ -49,8 +52,10 @@ class PgRepository(AbstractPgRepository):
                 pg_stat_database["no_state"] = pg_stat_database.pop(None)
                 return ViewPgStatActivitySummary(**pg_stat_database)
 
-    async def execute_sql(self, sql: str, binds: dict[str, Any]) -> None:
-        async with self._create_session() as session:
+    async def execute_sql(self, sql: str, binds: dict[str, Any], target: Target) -> None:
+        engine = create_async_engine(target.DB_URL.get_secret_value(), pool_recycle=3600)
+
+        async with engine.connect() as session:
             statement = text(sql)
             # get all params from statement
             params = statement.compile().params
@@ -59,9 +64,12 @@ class PgRepository(AbstractPgRepository):
             await session.execute(statement)
             await session.commit()
 
-    async def execute_sql_select(self, sql: str, limit: int, offset: int) -> Optional[
-        list[dict[str, Any]]]:
-        async with self._create_session() as session:
+    async def execute_sql_select(
+        self, sql: str, limit: int, offset: int, target: Target
+    ) -> Optional[list[dict[str, Any]]]:
+        engine = create_async_engine(target.DB_URL.get_secret_value(), pool_recycle=3600)
+
+        async with engine.connect() as session:
             statement = text(sql)
             # get all params from statement
             params = statement.compile().params
@@ -72,22 +80,15 @@ class PgRepository(AbstractPgRepository):
             table_rows = r.fetchall()
             return table_rows_to_list_of_dicts(list(table_rows))
 
-    async def execute_ssh(self, command: str, binds: dict[str, Any]) -> None:
+    async def execute_ssh(self, command: str, binds: dict[str, Any], target: Target) -> None:
         client = paramiko.client.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
         command_template = jinja2.Environment(autoescape=True).from_string(command)
-
-        binds.update(**settings.flatten())
-        # TODO: Resolve multiple targets
-        target: Target = list(settings.TARGETS.values())[0]
-
-        target_binds = {
-            f"TARGET__{key}": value
-            for key, value in target.model_dump().items()
-        }
-
-        binded = command_template.render(**binds, **target_binds)
+        target.DB_URL = target.DB_URL.get_secret_value()
+        target_dict = {f"TARGET__{k}": v for k, v in target.model_dump().items()}
+        binds.update(**settings.flatten(), **target_dict)
+        binded = command_template.render(**binds)
         client.connect(
             hostname=target.SSH_HOST,
             port=target.SSH_PORT,
@@ -96,3 +97,6 @@ class PgRepository(AbstractPgRepository):
         )
         # TODO: Think how to fetch responses better
         _stdin, _stdout, _stderr = client.exec_command(binded)
+
+    async def fetch_targets(self) -> list[str]:
+        return list(settings.TARGETS.keys())

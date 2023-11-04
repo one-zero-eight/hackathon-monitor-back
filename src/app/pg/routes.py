@@ -9,7 +9,7 @@ from src.exceptions import (
     NoCredentialsException,
 )
 from src.repositories.pg import AbstractPgRepository
-from src.schemas.pg_stats import ViewPgStatActivitySummary, PgStat
+from src.schemas.pg_stats import ViewPgStatActivitySummary
 
 
 class PgStatActivitySummaryResult(BaseModel):
@@ -38,3 +38,18 @@ async def get_statistics_summary(
         return PgStatActivitySummaryResult(success=True, process_count_by_state=pg_stat_activity)
 
     return PgStatActivitySummaryResult(success=False, detail="No data found")
+
+
+@router.get(
+    "/targets",
+    responses={
+        200: {"description": "Available targets aliases"},
+        **IncorrectCredentialsException.responses,
+        **NoCredentialsException.responses,
+    },
+)
+async def targets(
+    _verify_bot: Annotated[bool, DEPENDS_BOT],
+    pg_repository: Annotated[AbstractPgRepository, DEPENDS_PG_STAT_REPOSITORY],
+) -> list[str]:
+    return await pg_repository.fetch_targets()

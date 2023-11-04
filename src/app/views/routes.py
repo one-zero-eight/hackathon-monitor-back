@@ -1,10 +1,11 @@
 from typing import Annotated, Optional, Any
 
-from pydantic import BaseModel, create_model
+from fastapi import Query
 
 from src.app.dependencies import DEPENDS_BOT, DEPENDS_PG_STAT_REPOSITORY
 from src.app.views import router
-from src.exceptions import IncorrectCredentialsException, NoCredentialsException, ArgumentRequiredException
+from src.config import Target, settings
+from src.exceptions import IncorrectCredentialsException, NoCredentialsException
 from src.repositories.pg import AbstractPgRepository
 from src.storages.monitoring.config import settings as monitoring_settings, View
 
@@ -28,16 +29,17 @@ async def get_views(
 
 
 async def _execute_view(
-    pg_repository: AbstractPgRepository, view_alias: str, limit: int, offset
+    pg_repository: AbstractPgRepository, view_alias: str, limit: int, offset, target: Target
 ) -> Optional[list[dict[str, Any]]]:
     view: View = monitoring_settings.views.get(view_alias)
 
-    rows = await pg_repository.execute_sql_select(view.sql, limit=limit, offset=offset)
+    rows = await pg_repository.execute_sql_select(view.sql, limit=limit, offset=offset, target=target)
     return rows
 
 
 # generate routes for each action
 for view_alias, view in monitoring_settings.views.items():
+
     def wrapper(binded_view_alias: str):
         # for function closure (to pass action_alias)
         async def execute_view(
@@ -45,12 +47,12 @@ for view_alias, view in monitoring_settings.views.items():
             pg_repository: Annotated[AbstractPgRepository, DEPENDS_PG_STAT_REPOSITORY],
             limit: int = 20,
             offset: int = 0,
+            target_alias: str = Query(...),
         ):
-            arguments: BaseModel
-            return await _execute_view(pg_repository, binded_view_alias, limit=limit, offset=offset)
+            target = settings.TARGETS[target_alias]
+            return await _execute_view(pg_repository, binded_view_alias, limit=limit, offset=offset, target=target)
 
         return execute_view
-
 
     router.add_api_route(
         f"/execute/{view_alias}",

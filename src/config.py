@@ -105,7 +105,7 @@ class Settings(BaseModel):
         Flatten settings to dict.
         """
         nested = self.model_dump(include={"AUTH", "SMTP", "PROMETHEUS"})
-        flattened = self.model_dump(exclude={"model_config", "AUTH", "SMTP", "PROMETHEUS"})
+        flattened = self.model_dump(exclude={"model_config", "AUTH", "SMTP", "PROMETHEUS", "TARGETS"})
 
         for key, value in nested.items():
             if isinstance(value, dict):
