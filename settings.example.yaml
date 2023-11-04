@@ -24,8 +24,6 @@ targets:
 # ---------- Prometheus settings ----- #
 prometheus:
     host: http://10.10.10.10:9090
-    # path to alert rules file
-    # alert_rules_path: ./prometheus/alert_rules.yml
 
 # ---------- SMTP settings ----- #
 smtp_enabled: false

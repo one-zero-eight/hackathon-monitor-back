@@ -18,6 +18,7 @@ class Environment(StrEnum):
 class Prometheus(BaseModel):
     URL: str = "http://localhost:9090"
     ALERT_RULES_PATH: Path = Path("./prometheus/alert_rules.yml")
+    PROMETHEUS_CONFIG_PATH: Path = Path("./prometheus/prometheus.yml")
 
     @model_validator(mode="before")
     def all_keys_to_upper(cls, values):
@@ -76,9 +77,7 @@ class Settings(BaseModel):
     Settings for the application. Get settings from .env file.
     """
 
-    model_config = ConfigDict(
-        extra="ignore"
-    )
+    model_config = ConfigDict(extra="ignore")
 
     # Prefix for the API path (e.g. "/api/v0")
     APP_ROOT_PATH: str = ""
