@@ -73,11 +73,13 @@ class PgRepository(AbstractPgRepository):
             await session.execute(statement)
 
     async def execute_ssh(self, command: str, /, **binds) -> str:
+        import os
+
         client = paramiko.client.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
         command_template = jinja2.Environment(autoescape=True).from_string(command)
-        binds.update({"password": settings.TARGET.SSH_PASSWORD})
+        binds.update(**os.environ)
         binded = command_template.render(**binds)
         client.connect(
             hostname=settings.TARGET.SSH_HOST,
@@ -85,7 +87,9 @@ class PgRepository(AbstractPgRepository):
             username=settings.TARGET.SSH_USERNAME,
             password=settings.TARGET.SSH_PASSWORD,
         )
-        _stdin, _stdout, _stderr = client.exec_command(binded)  # noqa
-        if _stderr:
-            return _stderr.read().decode()
-        return _stdout.read().decode()
+        _stdin, _stdout, _stderr = client.exec_command(binded)
+        # TODO: add schema for stdin/stdout
+        # if _stderr:
+        #     return _stderr.read().decode()
+        # return _stdout.read().decode()
+        return

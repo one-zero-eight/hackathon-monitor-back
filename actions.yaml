@@ -17,4 +17,15 @@ actions:
             - type: sql
               query: CHECKPOINT;
             - type: ssh
-              query: echo {{ password }} | sudo -S systemctl restart postgresql
+              query: echo {{ TARGET__SSH_PASSWORD }} | sudo -S systemctl restart postgresql
+
+    create_dump:
+        title: Create Dump
+        description: Create dump of current database.
+        arguments:
+            dump_name:
+                description: Name of the dump.
+                type: string
+        steps:
+            - type: ssh
+              query: pg_dump --dbname={{ TARGET__DB_URL }} | gzip > tmp/{{ dump_name }}.gz
