@@ -1,7 +1,8 @@
 __all__ = ["SQLAlchemyStorage", "AbstractSQLAlchemyStorage"]
 
-from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 from abc import ABC, abstractmethod
+
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
 
 class AbstractSQLAlchemyStorage(ABC):
@@ -30,7 +31,7 @@ class SQLAlchemyStorage(AbstractSQLAlchemyStorage):
     def from_url(cls, url: str) -> "SQLAlchemyStorage":
         from sqlalchemy.ext.asyncio import create_async_engine
 
-        engine = create_async_engine(url)
+        engine = create_async_engine(url, pool_recycle=3600)
         return cls(engine)
 
     def create_session(self) -> AsyncSession:
