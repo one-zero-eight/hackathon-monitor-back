@@ -1,7 +1,7 @@
 from types import NoneType
-from typing import Annotated, Any
+from typing import Annotated
 
-from pydantic import BaseModel, Field, create_model
+from pydantic import BaseModel, create_model
 
 from src.app.actions import router
 from src.app.dependencies import DEPENDS_BOT, DEPENDS_PG_STAT_REPOSITORY
@@ -9,10 +9,6 @@ from src.exceptions import (ActionNotFoundException, IncorrectCredentialsExcepti
                             ArgumentRequiredException)
 from src.repositories.pg import AbstractPgRepository
 from src.storages.monitoring.config import settings as monitoring_settings, Action
-
-
-class ExecuteActionRequest(BaseModel):
-    arguments: dict[str, Any] = Field(default_factory=dict)
 
 
 async def _execute_action(

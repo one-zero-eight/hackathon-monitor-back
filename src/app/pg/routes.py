@@ -29,12 +29,9 @@ class PgStatActivitySummaryResult(BaseModel):
     },
 )
 async def get_statistics_summary(
-    # user_id: int,
     _verify_bot: Annotated[bool, DEPENDS_BOT],
-    # user_repository: Annotated[AbstractUserRepository, DEPENDS_USER_REPOSITORY],
     pg_repository: Annotated[AbstractPgRepository, DEPENDS_PG_STAT_REPOSITORY],
 ) -> PgStatActivitySummaryResult:
-    # _user = await user_repository.read(user_id)
     pg_stat_activity = await pg_repository.read_pg_stat_summary()
 
     if pg_stat_activity:

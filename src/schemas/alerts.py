@@ -21,7 +21,7 @@ class MappedAlert(BaseModel):
     description: Optional[str] = None
     severity: Optional[str] = None
     suggested_actions: list[str] = Field(default_factory=list)
-    related_graphs: list[str] = Field(default_factory=list)
+    related_views: list[str] = Field(default_factory=list)
 
 
 class AlertDeliveryScheme(BaseModel):
