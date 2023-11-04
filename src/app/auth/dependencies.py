@@ -5,7 +5,7 @@ from typing import Optional
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from src.app.auth.telegram import telegram_check_authorization, TelegramWidgetData
+from src.app.auth.telegram import telegram_webapp_check_authorization, TelegramWidgetData
 from src.exceptions import NoCredentialsException, IncorrectCredentialsException
 from src.repositories.tokens import TokenRepository
 
@@ -59,7 +59,7 @@ def verify_webapp(
 
     telegram_data = TelegramWidgetData.parse_from_string(bearer.credentials)
 
-    if not telegram_check_authorization(telegram_data):
+    if not telegram_webapp_check_authorization(telegram_data):
         raise IncorrectCredentialsException()
 
     return True
