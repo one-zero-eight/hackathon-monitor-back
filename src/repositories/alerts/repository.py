@@ -26,6 +26,7 @@ def map_alert(alert: AlertDB, id_: int) -> MappedAlert:
         return MappedAlert(
             id=id_,
             status=status,
+            target_alias=alert.target_alias,
             alias=alert.alias,
             title=configurated.title,
             description=description,
@@ -50,6 +51,7 @@ def map_alert(alert: AlertDB, id_: int) -> MappedAlert:
 
         return MappedAlert(
             id=id_,
+            target_alias=alert.target_alias,
             alias=alert.alias,
             value=alert.value,
             timestamp=alert.timestamp,

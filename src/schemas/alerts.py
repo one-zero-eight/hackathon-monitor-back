@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 
 
 class AlertDB(BaseModel):
+    target_alias: str
     alias: str
     timestamp: datetime.datetime
     value: dict[str, Any]
@@ -14,6 +15,7 @@ class MappedAlert(BaseModel):
     id: int
     status: Optional[str] = None
     alias: str
+    target_alias: str
     value: dict[str, Any]
     timestamp: datetime.datetime
     # --- Mapped --- #

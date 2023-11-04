@@ -27,7 +27,8 @@ class AlertManagerRequest(BaseModel):
                             "severity": "critical",
                         },
                         "annotations": {
-                            "description": "A Prometheus target has disappeared. An exporter might be crashed. VALUE = 0  "
+                            "description": "A Prometheus target has disappeared. An exporter might be crashed. VALUE "
+                            "= 0"
                             "LABELS: map[__name__:up instance:postgres_exporter:9187 job:postgres]",
                             "summary": "Prometheus target missing (instance postgres_exporter:9187)",
                         },
@@ -45,7 +46,8 @@ class AlertManagerRequest(BaseModel):
                     "severity": "critical",
                 },
                 "commonAnnotations": {
-                    "description": "A Prometheus target has disappeared. An exporter might be crashed. VALUE = 0  LABELS: "
+                    "description": "A Prometheus target has disappeared. An exporter might be crashed. VALUE = 0  "
+                    "LABELS:"
                     "map[__name__:up instance:postgres_exporter:9187 job:postgres]",
                     "summary": "Prometheus target missing (instance postgres_exporter:9187)",
                 },
@@ -67,26 +69,30 @@ async def webhook(
     alert_repository: Annotated[AbstractAlertRepository, DEPENDS_ALERT_REPOSITORY],
     data: AlertManagerRequest,
 ):
-    # TODO: Resolve multiple targets
-    target = list(settings.TARGETS.values())[0]
-    receivers = target.RECEIVERS
-
     for alert in data.alerts:
         # get alertname
         alert_alias = alert["labels"]["alertname"]
         # get timestamp from iso
         timestamp = datetime.datetime.fromisoformat(alert["startsAt"])
-        # jsonify alert
-        # save alert
-        mapped_alert = await alert_repository.create_alert(
-            AlertDB(
-                alias=alert_alias,
-                timestamp=timestamp,
-                value=alert,
+        # resolve multiple targets
+        try:
+            target_alias = alert["labels"]["target"]
+            target = settings.TARGETS[target_alias]
+            receivers = target.RECEIVERS
+
+            # save alert
+            mapped_alert = await alert_repository.create_alert(
+                alert=AlertDB(
+                    target_alias=target_alias,
+                    alias=alert_alias,
+                    timestamp=timestamp,
+                    value=alert,
+                )
             )
-        )
-        # start mailing
-        await alert_repository.start_delivery(mapped_alert.id, receivers)
+            # start mailing
+            await alert_repository.start_delivery(mapped_alert.id, receivers)
+        except KeyError:
+            continue
 
 
 @router.get("/by-id/{alert_id}", status_code=200)
