@@ -54,6 +54,10 @@ services:
       - "3100:3000"
     volumes:
       - "grafana_data:/var/lib/grafana"
+    environment:
+      - "GF_SECURITY_ALLOW_EMBEDDING=true"
+      - "GF_AUTH_ANONYMOUS_ENABLED=true"
+      - "GF_AUTH_ANONYMOUS_HIDE_VERSION=true"
 
   postgres_exporter:
     image: quay.io/prometheuscommunity/postgres-exporter
@@ -62,6 +66,8 @@ services:
     env_file: .env
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    ports:
+      - "9187:9187"
 
   alertmanager:
     image: "prom/alertmanager:v0.26.0"
