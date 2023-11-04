@@ -33,7 +33,7 @@ def map_alert(alert: AlertDB, id_: int) -> MappedAlert:
             value=alert.value,
             timestamp=alert.timestamp,
             suggested_actions=configurated.suggested_actions,
-            related_graphs=configurated.related_graphs,
+            related_views=configurated.related_views,
         )
     else:
         from_json = {"status": json_["status"]}

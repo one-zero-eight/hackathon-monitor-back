@@ -1,0 +1,9 @@
+views:
+#     deliveries:
+#         title: Доставка
+#         description: Список уведомлений, которые должны быть отправлены с получат
+#         sql: "SELECT * FROM alert_deliveries WHERE delivered = false"
+#     alerts:
+#         title: Уведомления
+#         description: Список уведомлений
+#         sql: "SELECT * FROM alerts ORDER BY timestamp DESC"

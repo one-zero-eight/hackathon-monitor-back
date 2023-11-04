@@ -1,6 +1,9 @@
+import datetime
+from typing import Optional, Any
+
 import jinja2
 import paramiko
-from sqlalchemy import RowMapping
+from sqlalchemy import RowMapping, Row, Sequence
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import text
 
@@ -25,13 +28,13 @@ class PgRepository(AbstractPgRepository):
             if pg_stat_activity:
                 return [ViewPgStatActivity.model_validate(r, from_attributes=True) for r in pg_stat_activity]
 
-    async def read_pg_stat(self, pg_stat_name: PgStat, limit: int, offset: int) -> list[RowMapping]:
+    async def read_pg_stat(self, pg_stat_name: PgStat, limit: int, offset: int) -> Optional[list[dict[str, Any]]]:
         async with self._create_session() as session:
             statement = text(f"""SELECT * FROM pg_catalog.pg_stat_{pg_stat_name} LIMIT {limit} OFFSET {offset}""")
             pg_stat = (await session.execute(statement)).fetchall()
 
             if pg_stat:
-                return [r._mapping for r in pg_stat]
+                return table_rows_to_list_of_dicts(list(pg_stat))
 
     async def read_total_backends_count(self) -> int:
         async with self._create_session() as session:
@@ -63,14 +66,17 @@ class PgRepository(AbstractPgRepository):
                 pg_stat_database["no_state"] = pg_stat_database.pop(None)
                 return ViewPgStatActivitySummary(**pg_stat_database)
 
-    async def execute_sql(self, sql: str, /, **binds) -> None:
+    async def execute_sql(self, sql: str, fetchall: bool = False, /, **binds) -> Optional[list[dict[str, Any]]]:
         async with self._create_session() as session:
             statement = text(sql)
             # get all params from statement
             params = statement.compile().params
             binds = {k: v for k, v in binds.items() if k in params}
             statement = statement.bindparams(**binds)
-            await session.execute(statement)
+            r = await session.execute(statement)
+            if fetchall:
+                table_rows = r.fetchall()
+                return table_rows_to_list_of_dicts(list(table_rows))
 
     async def execute_ssh(self, command: str, /, **binds) -> str:
 
@@ -93,3 +99,21 @@ class PgRepository(AbstractPgRepository):
         # if _stderr:
         #     return _stderr.read(256).decode()
         # return _stdout.read(256).decode()
+
+
+def table_rows_to_list_of_dicts(table_rows: list[Row], /) -> list[dict[str, Any]]:
+    rows = []
+    for table_row in table_rows:
+        r = table_row._mapping
+        row = dict()
+        # translate to dict[str, str]
+        for k, v in r.items():
+            key = str(k)
+            if v is None:
+                row[key] = None
+            elif isinstance(v, (bool, int, float, str, datetime.datetime, datetime.date)):
+                row[key] = v
+            else:
+                row[key] = str(v)
+        rows.append(row)
+    return rows

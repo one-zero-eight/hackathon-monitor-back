@@ -64,20 +64,4 @@ async def get_statistics(
     https://www.postgresql.org/docs/current/monitoring-stats.html#MONITORING-PG-STAT-ACTIVITY-VIEW
     """
     # _user = await user_repository.read(user_id)
-    pg_stat_activity = await pg_repository.read_pg_stat(pg_stat_name=stat_name, limit=limit, offset=offset)
-    if pg_stat_activity is None:
-        return None
-    rows = []
-    for r in pg_stat_activity:
-        row = dict()
-        # translate to dict[str, str]
-        for k, v in r.items():
-            key = str(k)
-            if v is None:
-                row[key] = None
-            elif isinstance(v, (bool, int, float)):
-                row[key] = v
-            else:
-                row[key] = str(v)
-        rows.append(row)
-    return rows
+    return await pg_repository.read_pg_stat(pg_stat_name=stat_name, limit=limit, offset=offset)

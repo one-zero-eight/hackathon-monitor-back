@@ -9,7 +9,7 @@ alerts:
       annotations:
         description: "{{ $labels.instance }} превышает текущее максимальное ограничение соединений с Postgres (текущее значение: {{ $value }}). Возможны проблемы с сервисами - пожалуйста, примите немедленные меры (вам, вероятно, нужно увеличить max_connections в образе Docker и перезапустить)."
     suggested_actions: [create_dump, restart_db]
-    related_graphs: []
+    related_views: []
 
   high_connections:
     title: Высокое количество соединений с PostgreSQL
@@ -21,7 +21,7 @@ alerts:
       annotations:
         description: "{{ $labels.instance }} превышает 80% текущего максимального лимита соединений с Postgres (текущее значение: {{ $value }}). Пожалуйста, проверьте графики использования и подтвердите, является ли это нормальным ростом сервиса, злоупотреблением или временным состоянием, или если необходимо предоставить новые ресурсы (или, вероятнее всего, увеличить лимиты)."
     suggested_actions: [create_dump, restart_db]
-    related_graphs: []
+    related_views: []
 
   postgresql_down:
     title: PostgreSQL недоступен
@@ -33,7 +33,7 @@ alerts:
       annotations:
         description: "{{ $labels.instance }} отклоняет запросы от экспортера и, вероятно, не позволяет работать запросам DNS. Пользовательские сервисы, вероятно, не будут затронуты, при условии, что хотя бы один узел остается включенным."
     suggested_actions: [create_dump, restart_db]
-    related_graphs: []
+    related_views: []
 
   slow_queries:
     title: Медленные запросы в PostgreSQL
@@ -45,7 +45,7 @@ alerts:
       annotations:
         description: "PostgreSQL высокое количество медленных запросов {{ $labels.cluster }} для базы данных {{ $labels.datname }} со значением {{ $value }}"
     suggested_actions: [create_dump, restart_db]
-    related_graphs: []
+    related_views: []
 
   qps:
     title: Лимит запросов в секунду в PostgreSQL
@@ -57,7 +57,7 @@ alerts:
       annotations:
         description: "PostgreSQL высокое количество запросов в секунду на {{ $labels.cluster }} для базы данных {{ $labels.datname }} со значением {{ $value }}"
     suggested_actions: [create_dump, restart_db]
-    related_graphs: []
+    related_views: []
 
   cache_hit_ratio:
     title: Низкий коэффициент попаданий в кэш PostgreSQL
@@ -69,7 +69,7 @@ alerts:
       annotations:
         description: "PostgreSQL низкий коэффициент попаданий в кэш на {{ $labels.cluster }} для базы данных {{ $labels.datname }} со значением {{ $value }}"
     suggested_actions: [create_dump, restart_db]
-    related_graphs: []
+    related_views: []
 
 
   active_requests:
@@ -82,7 +82,7 @@ alerts:
       annotations:
         description: "PostgreSQL высокое количество активных запросов на {{ $labels.cluster }} для базы данных {{ $labels.datname }} со значением {{ $value }}"
     suggested_actions: [create_dump, restart_db]
-    related_graphs: []
+    related_views: []
 
 
 # Add more alerts here if needed

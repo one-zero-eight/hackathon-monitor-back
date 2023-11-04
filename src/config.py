@@ -134,6 +134,7 @@ class Settings(BaseSettings):
     # Monitoring
     ALERTS_CONFIG_PATH: Path = Path("alerts.yaml")
     ACTIONS_CONFIG_PATH: Path = Path("actions.yaml")
+    VIEWS_CONFIG_PATH: Path = Path("views.yaml")
 
     def flatten(self):
         """

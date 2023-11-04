@@ -16,13 +16,26 @@ class Alert(BaseModel):
         for_: Optional[str] = Field(None, alias="for")
 
     title: str
-    description: str
+    description: Optional[str] = ""
     severity: str
 
     rule: Rule
 
     suggested_actions: list[str]
-    related_graphs: list[str]
+    related_views: list[str]
+
+
+class Argument(BaseModel):
+    type: str
+    default: Optional[Any] = "ellipsis"
+    description: str = ""
+    required: bool = True
+
+    def field_info(self) -> FieldInfo:
+        if self.default == "ellipsis":
+            return FieldInfo(description=self.description)
+        else:
+            return FieldInfo(default=self.default, description=self.description)
 
 
 class Action(BaseModel):
@@ -34,46 +47,40 @@ class Action(BaseModel):
         type: Type
         query: str
 
-    class Argument(BaseModel):
-        type: str
-        default: Optional[Any] = "ellipsis"
-        description: str = ""
-        required: bool = True
-
-        def field_info(self) -> FieldInfo:
-            if self.default == "ellipsis":
-                return FieldInfo(description=self.description)
-            else:
-                return FieldInfo(default=self.default, description=self.description)
-
     title: str
-    description: str
+    description: Optional[str] = ""
     arguments: dict[str, Argument] = Field(default_factory=dict)
     steps: list[Step]
 
 
-class Graph(BaseModel):
+class View(BaseModel):
     title: str
-    graphana_url: str
+    description: str
+    sql: str
+    arguments: dict[str, Argument] = Field(default_factory=dict)
 
 
 class MonitoringConfig(BaseModel):
     alerts: dict[str, Alert] = Field(default_factory=dict)
     actions: dict[str, Action] = Field(default_factory=dict)
-    graphs: dict[str, Graph] = Field(default_factory=dict)
+    views: dict[str, View] = Field(default_factory=dict)
 
     @classmethod
-    def from_yamls(cls, alert_path: Path, actions_path: Path) -> "MonitoringConfig":
+    def from_yamls(cls, alert_path: Path, actions_path: Path, views_path: Path) -> "MonitoringConfig":
         with open(alert_path, "r", encoding="utf-8") as f:
             alerts_config = yaml.safe_load(f)
 
         with open(actions_path, "r", encoding="utf-8") as f:
             actions_config = yaml.safe_load(f)
 
-        return cls(alerts=alerts_config["alerts"], actions=actions_config["actions"])
+        with open(views_path, "r", encoding="utf-8") as f:
+            views_config = yaml.safe_load(f)
+
+        return cls(alerts=alerts_config["alerts"], actions=actions_config["actions"], views=views_config["views"])
 
 
 settings = MonitoringConfig.from_yamls(
     alert_path=app_settings.ALERTS_CONFIG_PATH,
     actions_path=app_settings.ACTIONS_CONFIG_PATH,
+    views_path=app_settings.VIEWS_CONFIG_PATH
 )
