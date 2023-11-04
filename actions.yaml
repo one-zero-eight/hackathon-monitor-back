@@ -28,4 +28,4 @@ actions:
                 type: string
         steps:
             - type: ssh
-              query: pg_dump --dbname={{ TARGET__DB_URL }} | gzip > 'tmp/{{ dump_name }}.gz'
+              query: pg_dump --dbname={{ TARGET__DB_URL }} | gzip > tmp/{{ dump_name }}.gz
