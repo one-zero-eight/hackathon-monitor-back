@@ -34,10 +34,18 @@ class Jwt(BaseModel):
         if self.PUBLIC_KEY is None:
             self.PUBLIC_KEY = self.PUBLIC_KEY_PATH.read_bytes()
 
+    @model_validator(mode="before")
+    def all_keys_to_upper(cls, values):
+        return {key.upper(): value for key, value in values.items()}
+
 
 class Prometheus(BaseModel):
     URL: str = "http://localhost:9090"
     ALERT_RULES_PATH: Path = Path("./prometheus/alert_rules.yml")
+
+    @model_validator(mode="before")
+    def all_keys_to_upper(cls, values):
+        return {key.upper(): value for key, value in values.items()}
 
 
 class Target(BaseModel):
@@ -52,23 +60,38 @@ class Target(BaseModel):
     @classmethod
     def parse_receivers(cls, value):
         if isinstance(value, str):
-            return [int(i) for i in value.split()]
+            # [11111,222222] -> [11111, 222222]
+            import re
+            # all numbers in string
+            value = re.findall(r"\d+", value)
+            return [int(v) for v in value]
         return value
+
+    @model_validator(mode="before")
+    def all_keys_to_upper(cls, values):
+        return {key.upper(): value for key, value in values.items()}
 
 
 class Smtp(BaseModel):
-    ENABLE: bool = False
     SERVER: str = "mail.innopolis.ru"
     PORT: int = 587
     USERNAME: str
     PASSWORD: SecretStr
 
+    @model_validator(mode="before")
+    def all_keys_to_upper(cls, values):
+        return {key.upper(): value for key, value in values.items()}
 
-class Auth(BaseModel):
+
+class Cookies(BaseModel):
     # Authentication
-    COOKIE_NAME: str = "token"
-    COOKIE_DOMAIN: str = "innohassle.ru"
+    NAME: str = "token"
+    DOMAINS: str = "innohassle.ru"
     ALLOWED_DOMAINS: list[str] = ["innohassle.ru", "api.innohassle.ru", "localhost"]
+
+    @model_validator(mode="before")
+    def all_keys_to_upper(cls, values):
+        return {key.upper(): value for key, value in values.items()}
 
 
 class Settings(BaseSettings):
@@ -94,13 +117,15 @@ class Settings(BaseSettings):
     DB_URL: SecretStr
 
     # JWT settings
-    JWT: Jwt = Field(default_factory=Jwt)
+    JWT_ENABLED: bool = False
+    JWT: Optional[Jwt] = None
     # Target DB and SSH for monitoring
     TARGET: Target = Field(default_factory=Target)
     # Authentication
-    AUTH: Auth = Field(default_factory=Auth)
+    COOKIE: Cookies = Field(default_factory=Cookies)
     # SMTP server settings
-    SMTP: Smtp = Field(default_factory=Smtp)
+    SMTP_ENABLED: bool = False
+    SMTP: Optional[Smtp] = None
     # Prometheus settings
     PROMETHEUS: Prometheus = Field(default_factory=Prometheus)
     # Security
@@ -125,54 +150,6 @@ class Settings(BaseSettings):
                 flattened[key] = value
 
         return flattened
-
-
-# class DbConfig(BaseModel):
-#     host: str = Field(examples=["localhost"])
-#     password: str = Field(examples=["mysecretpassword"])
-#     user: str = Field(examples=["postgres"])
-#     name: str = Field(examples=["postgres"])
-#     port: str = Field(examples=["5432"])
-#
-#     @property
-#     def database(self):
-#         return self.name
-#
-#
-# class TgBot(BaseModel):
-#     token: str = Field(..., examples=["1234567890:ABCdefGhIJKlmnOpQrStUvWxYz-lr4zF0ZU"])
-#     admin_id: int = Field(..., examples=[1234567890])
-#     redis: Optional[str] = Field(None, examples=["redis://localhost:6379/0"])
-#
-#
-# class Miscellaneous(BaseModel):
-#     pay_token: Optional[str] = Field(None, examples=["test"])
-#
-#
-# class CodeTest(BaseModel):
-#     host: str = Field(examples=["localhost"])
-#     port: str = Field(examples=["8000"])
-#
-#
-# class EnvSettings(BaseSettings):
-#     model_config = SettingsConfigDict(
-#         env_file=".env",
-#         env_file_encoding="utf-8",
-#         env_nested_delimiter="__",
-#     )
-#
-#     BOT: TgBot
-#     DB: DbConfig
-#     MISC: Miscellaneous
-#     CODE_TEST: CodeTest
-#
-#     @property
-#     def tg_bot(self):
-#         return self.BOT
-#
-#     @property
-#     def db(self):
-#         return self.DB
 
 
 settings = Settings()

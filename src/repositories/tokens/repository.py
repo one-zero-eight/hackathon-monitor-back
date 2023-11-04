@@ -17,6 +17,14 @@ class TokenRepository(AbstractTokenRepository):
 
     @classmethod
     async def verify_user_token(cls, token: str) -> UserTokenData:
+        """
+        :raises IncorrectCredentialsException: if token is invalid
+        :raises UserNotFound: if user with given id is not found
+        :raises RuntimeError: if JWT is not enabled
+        """
+
+        if not settings.JWT_ENABLED:
+            raise RuntimeError("JWT is not enabled")
         try:
             user_repository = Dependencies.get_user_repository()
             payload = jwt.decode(token, settings.JWT.PUBLIC_KEY)
@@ -37,6 +45,11 @@ class TokenRepository(AbstractTokenRepository):
 
     @classmethod
     def _create_access_token(cls, data: dict, expires_delta: timedelta) -> str:
+        """
+        :raises RuntimeError: if JWT is not enabled
+        """
+        if not settings.JWT_ENABLED:
+            raise RuntimeError("JWT is not enabled")
         payload = data.copy()
         issued_at = datetime.utcnow()
         expire = issued_at + expires_delta
@@ -46,6 +59,11 @@ class TokenRepository(AbstractTokenRepository):
 
     @classmethod
     def create_access_token(cls, user_id: int) -> str:
+        """
+        :raises RuntimeError: if JWT is not enabled
+        """
+        if not settings.JWT_ENABLED:
+            raise RuntimeError("JWT is not enabled")
         data = {"sub": str(user_id)}
         access_token = TokenRepository._create_access_token(
             data=data,

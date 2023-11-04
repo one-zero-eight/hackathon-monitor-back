@@ -20,7 +20,7 @@ bearer_scheme = HTTPBearer(
 cookie_scheme = APIKeyCookie(
     scheme_name="Cookie",
     description="Your JSON Web Token (JWT) stored as 'token' cookie",
-    name=settings.AUTH.COOKIE_NAME,  # Cookie name
+    name=settings.COOKIE.NAME,  # Cookie name
     auto_error=False,  # We'll handle error manually
 )
 
@@ -54,21 +54,6 @@ async def verify_bot_token(
     return True
 
 
-async def get_current_user_id(
-    token: Optional[str] = Depends(get_access_token),
-) -> int:
-    """
-    :raises NoCredentialsException: if token is not provided
-    :param token: JWT token from header or cookie
-    :return: user id
-    """
-    if not token:
-        raise NoCredentialsException()
-
-    token_data = await TokenRepository.verify_user_token(token)
-    return token_data.user_id
-
-
 def verify_webapp(
     telegram_data: TelegramWidgetData,
 ) -> bool:
@@ -82,3 +67,19 @@ def verify_webapp(
         raise IncorrectCredentialsException()
 
     return True
+
+
+async def get_current_user_id(
+    token: Optional[str] = Depends(get_access_token),
+) -> int:
+    """
+    :raises NoCredentialsException: if token is not provided
+    :param token: JWT token from header or cookie
+    :return: user id
+    """
+
+    if not token:
+        raise NoCredentialsException()
+
+    token_data = await TokenRepository.verify_user_token(token)
+    return token_data.user_id

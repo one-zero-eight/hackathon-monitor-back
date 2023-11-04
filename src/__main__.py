@@ -30,6 +30,7 @@ app = FastAPI(
 )
 
 if settings.CORS_ALLOW_ORIGINS:
+    warnings.warn("CORS is enabled!")
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.CORS_ALLOW_ORIGINS,
@@ -39,6 +40,16 @@ if settings.CORS_ALLOW_ORIGINS:
     )
 else:
     warnings.warn("CORS is disabled!")
+
+if settings.JWT_ENABLED:
+    warnings.warn("Authorization with JWT is enabled!")
+else:
+    warnings.warn("Authorization with JWT is disabled!")
+
+if settings.SMTP_ENABLED:
+    warnings.warn("SMTP and email connection is enabled!")
+else:
+    warnings.warn("SMTP and email connection is disabled!")
 
 app.add_middleware(SessionMiddleware, secret_key=settings.SESSION_SECRET_KEY.get_secret_value())
 
@@ -65,6 +76,6 @@ for router in routers:
 if settings.ENVIRONMENT == Environment.DEVELOPMENT:
     import logging
 
-    warnings.warn("Enable sqlalchemy logging")
+    warnings.warn("SQLAlchemy logging is enabled!")
     logging.basicConfig()
     logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)

@@ -30,7 +30,7 @@ async def setup_repositories():
     Dependencies.set_pg_stat_repository(pg_stat)
     Dependencies.set_alert_repository(alert_repository)
 
-    if settings.SMTP.ENABLE:
+    if settings.SMTP_ENABLED:
         smtp_repository = SMTPRepository()
         Dependencies.set_smtp_repository(smtp_repository)
 
