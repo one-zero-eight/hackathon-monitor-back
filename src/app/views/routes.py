@@ -23,50 +23,39 @@ class ViewWithAlias(View):
 )
 async def get_views(
     _bot: Annotated[bool, DEPENDS_BOT],
-):
+) -> list[ViewWithAlias]:
     return [ViewWithAlias(**view.dict(), alias=view_alias) for view_alias, view in monitoring_settings.views.items()]
 
 
 async def _execute_view(
-    pg_repository: AbstractPgRepository, view_alias: str, **arguments
+    pg_repository: AbstractPgRepository, view_alias: str, limit: int, offset
 ) -> Optional[list[dict[str, Any]]]:
     view: View = monitoring_settings.views.get(view_alias)
-    # ensure all required arguments are provided
-    for argument_name, argument in view.arguments.items():
-        if argument.required and argument_name not in arguments:
-            raise ArgumentRequiredException(argument_name)
 
-    rows = await pg_repository.execute_sql(view.sql, fetchall=True, binds=arguments)
-
+    rows = await pg_repository.execute_sql_select(view.sql, limit=limit, offset=offset)
     return rows
 
 
 # generate routes for each action
 for view_alias, view in monitoring_settings.views.items():
-    _arguments = {
-        argument_name: (argument.type, argument.field_info()) for argument_name, argument in view.arguments.items()
-    }
-    # for type hints
-    _Arguments: type[BaseModel] = create_model(f"Arguments_{view_alias}", **_arguments)
-
-
     def wrapper(binded_view_alias: str):
         # for function closure (to pass action_alias)
-        async def execute_action(
+        async def execute_view(
             _bot: Annotated[bool, DEPENDS_BOT],
             pg_repository: Annotated[AbstractPgRepository, DEPENDS_PG_STAT_REPOSITORY],
-            arguments: _Arguments,
+            limit: int = 20,
+            offset: int = 0,
         ):
             arguments: BaseModel
-            return await _execute_view(pg_repository, binded_view_alias, **arguments.model_dump(exclude_none=True))
+            return await _execute_view(pg_repository, binded_view_alias, limit=limit, offset=offset)
 
-        return execute_action
+        return execute_view
 
 
     router.add_api_route(
         f"/execute/{view_alias}",
         wrapper(view_alias),
-        methods=["POST"],
+        methods=["GET"],
         responses={
             200: {"description": "Get view by alias with arguments"},
             **IncorrectCredentialsException.responses,

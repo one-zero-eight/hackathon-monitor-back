@@ -68,7 +68,8 @@ async def webhook(
     data: AlertManagerRequest,
 ):
     # TODO: Resolve multiple targets
-    receivers = settings.TARGETS[0].RECEIVERS
+    target = list(settings.TARGETS.values())[0]
+    receivers = target.RECEIVERS
 
     for alert in data.alerts:
         # get alertname

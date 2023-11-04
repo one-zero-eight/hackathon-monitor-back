@@ -1,12 +1,4 @@
 views:
-    deliveries:
-        title: Доставка
-        description: Список уведомлений, которые должны быть отправлены с получат
-        sql: "SELECT * FROM alert_deliveries WHERE delivered = false"
-    alerts:
-        title: Уведомления
-        description: Список уведомлений
-        sql: "SELECT * FROM alerts ORDER BY timestamp DESC"
     list_vacuum:
         title: Прогресс активных вакуумов
         description: Отображает прогресс активных вакуумов
@@ -26,3 +18,13 @@ views:
      , p.index_vacuum_count                                                           AS ind_vac_cnt
      , round(p.num_dead_tuples * 100.0 / nullif(p.max_dead_tuples, 0),1)              AS dead_pct
   FROM pg_stat_progress_vacuum p JOIN pg_stat_activity a using (pid) ORDER BY dur DESC;"
+
+    pg_stat_activity:
+        title: Статистика активности
+        description: Отображает статистику активности бэкэндов
+        sql: "SELECT * FROM pg_catalog.pg_stat_activity LIMIT (:limit) OFFSET (:offset);"
+
+    pg_stat_database:
+        title: Статистика баз данных
+        description: Отображает статистику баз данных
+        sql: "SELECT * FROM pg_catalog.pg_stat_database LIMIT (:limit) OFFSET (:offset);"

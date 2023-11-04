@@ -57,7 +57,6 @@ class View(BaseModel):
     title: str
     description: str
     sql: str
-    arguments: dict[str, Argument] = Field(default_factory=dict)
 
 
 class MonitoringConfig(BaseModel):

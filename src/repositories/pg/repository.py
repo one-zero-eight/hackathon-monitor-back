@@ -38,41 +38,6 @@ class PgRepository(AbstractPgRepository):
     def _create_session(self) -> AsyncSession:
         return self.storage.create_session()
 
-    async def read_pg_stat_activity(self, limit: int) -> list[ViewPgStatActivity]:
-        async with self._create_session() as session:
-            statement = text(f"""SELECT * FROM pg_catalog.pg_stat_activity LIMIT {limit}""")
-            pg_stat_activity = (await session.execute(statement)).fetchall()
-
-            if pg_stat_activity:
-                return [ViewPgStatActivity.model_validate(r, from_attributes=True) for r in pg_stat_activity]
-
-    async def read_pg_stat(self, pg_stat_name: PgStat, limit: int, offset: int) -> Optional[list[dict[str, Any]]]:
-        async with self._create_session() as session:
-            statement = text(f"""SELECT * FROM pg_catalog.pg_stat_{pg_stat_name} LIMIT {limit} OFFSET {offset}""")
-            pg_stat = (await session.execute(statement)).fetchall()
-
-            if pg_stat:
-                return table_rows_to_list_of_dicts(list(pg_stat))
-
-    async def read_total_backends_count(self) -> int:
-        async with self._create_session() as session:
-            statement = text("""SELECT COUNT(*) FROM pg_catalog.pg_stat_activity""")
-            total_backends_count = (await session.execute(statement)).scalar()
-
-            if total_backends_count:
-                return total_backends_count
-
-    async def terminate_pg_backend(self, pid: int) -> bool:
-        async with self._create_session() as session:
-            statement = text("""SELECT pg_terminate_backend(:pid)""")
-            # get all params from statement
-            params = statement.compile().params
-            binds = {"pid": pid, "test": "test"}
-            binds = {k: v for k, v in binds.items() if k in params}
-            statement = statement.bindparams(**binds)
-            termination_result = (await session.execute(statement)).first()[0]
-            return termination_result
-
     async def read_pg_stat_summary(self) -> ViewPgStatActivitySummary:
         async with self._create_session() as session:
             statement = text("""SELECT state, COUNT(*) as count FROM pg_stat_activity GROUP BY state;""")
@@ -84,18 +49,28 @@ class PgRepository(AbstractPgRepository):
                 pg_stat_database["no_state"] = pg_stat_database.pop(None)
                 return ViewPgStatActivitySummary(**pg_stat_database)
 
-    async def execute_sql(self, sql: str, binds: dict[str, Any], fetchall: bool = False) -> Optional[
-        list[dict[str, Any]]]:
+    async def execute_sql(self, sql: str, binds: dict[str, Any]) -> None:
         async with self._create_session() as session:
             statement = text(sql)
             # get all params from statement
             params = statement.compile().params
             binds = {k: v for k, v in binds.items() if k in params}
             statement = statement.bindparams(**binds)
+            await session.execute(statement)
+            await session.commit()
+
+    async def execute_sql_select(self, sql: str, limit: int, offset: int) -> Optional[
+        list[dict[str, Any]]]:
+        async with self._create_session() as session:
+            statement = text(sql)
+            # get all params from statement
+            params = statement.compile().params
+            binds = dict(limit=limit, offset=offset)
+            binds = {k: v for k, v in binds.items() if k in params}
+            statement = statement.bindparams(**binds)
             r = await session.execute(statement)
-            if fetchall:
-                table_rows = r.fetchall()
-                return table_rows_to_list_of_dicts(list(table_rows))
+            table_rows = r.fetchall()
+            return table_rows_to_list_of_dicts(list(table_rows))
 
     async def execute_ssh(self, command: str, binds: dict[str, Any]) -> None:
         client = paramiko.client.SSHClient()
@@ -105,7 +80,8 @@ class PgRepository(AbstractPgRepository):
 
         binds.update(**settings.flatten())
         # TODO: Resolve multiple targets
-        target: Target = settings.TARGETS[0]
+        target: Target = list(settings.TARGETS.values())[0]
+
         target_binds = {
             f"TARGET__{key}": value
             for key, value in target.model_dump().items()

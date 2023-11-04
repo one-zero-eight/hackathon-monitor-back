@@ -88,7 +88,7 @@ class Settings(BaseModel):
     # PostgreSQL database connection URL
     DB_URL: SecretStr
     # Target DB and SSH for monitoring
-    TARGETS: list[Target] = Field(default_factory=list)
+    TARGETS: dict[str, Target] = Field(default_factory=dict)
     # Authentication
     COOKIE: Cookies = Field(default_factory=Cookies)
     # SMTP server settings

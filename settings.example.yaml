@@ -13,12 +13,13 @@ bot_token: 1234567890:ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
 
 # ---------- Target server settings ----- #
 targets:
--   db_url: postgresql+asyncpg://postgres:postgres@localhost:5432/postgres
-    ssh_host: 10.10.10.10
-    ssh_port: 22
-    ssh_username: admin
-    ssh_password: admin
-    receivers: [1111111,2222222,333333333]
+    db_1:
+        db_url: postgresql+asyncpg://postgres:postgres@localhost:5432/postgres
+        ssh_host: 10.10.10.10
+        ssh_port: 22
+        ssh_username: admin
+        ssh_password: admin
+        receivers: [1111111,2222222,333333333]
 
 # ---------- Prometheus settings ----- #
 prometheus:

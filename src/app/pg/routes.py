@@ -38,30 +38,3 @@ async def get_statistics_summary(
         return PgStatActivitySummaryResult(success=True, process_count_by_state=pg_stat_activity)
 
     return PgStatActivitySummaryResult(success=False, detail="No data found")
-
-
-@router.get(
-    "/stat-{stat_name}",
-    responses={
-        200: {"description": "Current database statistics by name"},
-        **IncorrectCredentialsException.responses,
-        **NoCredentialsException.responses,
-    },
-)
-async def get_statistics(
-    # user_id: int,
-    _verify_bot: Annotated[bool, DEPENDS_BOT],
-    # user_repository: Annotated[AbstractUserRepository, DEPENDS_USER_REPOSITORY],
-    pg_repository: Annotated[AbstractPgRepository, DEPENDS_PG_STAT_REPOSITORY],
-    limit: int = 20,
-    offset: int = 0,
-    stat_name: PgStat = PgStat.pg_stat_activity,
-) -> list[dict] | None:
-    """
-    Return rows from pg_stat view
-
-    See more about views:
-    https://www.postgresql.org/docs/current/monitoring-stats.html#MONITORING-PG-STAT-ACTIVITY-VIEW
-    """
-    # _user = await user_repository.read(user_id)
-    return await pg_repository.read_pg_stat(pg_stat_name=stat_name, limit=limit, offset=offset)

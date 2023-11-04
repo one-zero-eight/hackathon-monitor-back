@@ -23,7 +23,8 @@ async def setup_repositories():
     user_repository = UserRepository(storage)
     alert_repository = AlertRepository(storage)
     # TODO: Add target repository
-    target = settings.TARGETS[0]
+    target = list(settings.TARGETS.values())[0]
+
     target_storage = SQLAlchemyStorage.from_url(target.DB_URL.get_secret_value())
     pg_stat = PgRepository(target_storage)
 
