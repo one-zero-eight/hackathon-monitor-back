@@ -6,9 +6,6 @@ actions:
             pid:
                 description: PID сеанса для завершения.
                 type: int
-            test:
-                description: aasdasd
-                type: list[str]
         steps:
             - type: sql
               query: SELECT pg_terminate_backend(:pid)
