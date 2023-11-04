@@ -13,10 +13,10 @@ __all__ = [
 
 from fastapi import Depends
 
+from src.repositories.alerts.abc import AbstractAlertRepository
 from src.repositories.pg.abc import AbstractPgRepository
 from src.repositories.smtp.abc import AbstractSMTPRepository
 from src.repositories.users.abc import AbstractUserRepository
-from src.repositories.alerts.abc import AbstractAlertRepository
 from src.storages.sqlalchemy.storage import AbstractSQLAlchemyStorage
 
 

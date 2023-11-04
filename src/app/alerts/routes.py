@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, Annotated, Optional
+from typing import Any, Annotated
 
 from pydantic import BaseModel, ConfigDict
 
@@ -24,7 +24,8 @@ class AlertManagerRequest(BaseModel):
                     "severity": "critical"
                 },
                 "annotations": {
-                    "description": "A Prometheus target has disappeared. An exporter might be crashed. VALUE = 0  LABELS: map[__name__:up instance:postgres_exporter:9187 job:postgres]",
+                    "description": "A Prometheus target has disappeared. An exporter might be crashed. VALUE = 0  "
+                                   "LABELS: map[__name__:up instance:postgres_exporter:9187 job:postgres]",
                     "summary": "Prometheus target missing (instance postgres_exporter:9187)"
                 },
                 "startsAt": "2023-11-04T11:40:04.807+03:00",
@@ -43,7 +44,8 @@ class AlertManagerRequest(BaseModel):
             "severity": "critical"
         },
         "commonAnnotations": {
-            "description": "A Prometheus target has disappeared. An exporter might be crashed. VALUE = 0  LABELS: map[__name__:up instance:postgres_exporter:9187 job:postgres]",
+            "description": "A Prometheus target has disappeared. An exporter might be crashed. VALUE = 0  LABELS: "
+                           "map[__name__:up instance:postgres_exporter:9187 job:postgres]",
             "summary": "Prometheus target missing (instance postgres_exporter:9187)"
         },
         "externalURL": "http://b16f1e84e073:9093",

@@ -1,8 +1,8 @@
 import datetime
 from typing import Any
 
-from sqlalchemy.orm import mapped_column, Mapped
 from sqlalchemy import ForeignKey, DateTime
+from sqlalchemy.orm import mapped_column, Mapped
 
 from src.storages.sqlalchemy.models.__mixin__ import IdMixin
 from src.storages.sqlalchemy.models.base import Base

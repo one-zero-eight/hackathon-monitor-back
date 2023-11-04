@@ -1,7 +1,7 @@
 from typing import Annotated
 
-from src.app.webapp import router
 from src.app.dependencies import DEPENDS_WEBAPP
+from src.app.webapp import router
 
 
 @router.get("/check-auth", responses={200: {"description": "Check auth"}})

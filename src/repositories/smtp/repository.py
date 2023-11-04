@@ -4,11 +4,11 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
+from email_validator import validate_email, EmailNotValidError
 from jinja2 import Template
 
 from src.config import settings
 from src.repositories.smtp.abc import AbstractSMTPRepository
-from email_validator import validate_email, EmailNotValidError
 
 
 class SMTPRepository(AbstractSMTPRepository):

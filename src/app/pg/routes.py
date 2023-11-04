@@ -1,5 +1,7 @@
 from typing import Annotated, Optional
 
+from pydantic import BaseModel, ConfigDict
+
 from src.app.dependencies import DEPENDS_BOT, DEPENDS_PG_STAT_REPOSITORY
 from src.app.pg import router
 from src.exceptions import (
@@ -7,22 +9,7 @@ from src.exceptions import (
     NoCredentialsException,
 )
 from src.repositories.pg import AbstractPgRepository
-from src.schemas.pg_stats import ViewPgStatActivity, ViewPgStatActivitySummary, PgStat
-
-from pydantic import BaseModel, ConfigDict
-
-
-class PgStatActivityResult(BaseModel):
-    class Meta(BaseModel):
-        total_backends_count: int
-
-    meta: Meta
-    backends: list[ViewPgStatActivity]
-
-
-class PgTerminateSessionResult(BaseModel):
-    success: bool
-    detail: str = None
+from src.schemas.pg_stats import ViewPgStatActivitySummary, PgStat
 
 
 class PgStatActivitySummaryResult(BaseModel):
@@ -31,29 +18,6 @@ class PgStatActivitySummaryResult(BaseModel):
     success: bool
     detail: str = None
     process_count_by_state: Optional[ViewPgStatActivitySummary] = None
-
-
-@router.get(
-    "/terminate-session",
-    responses={
-        200: {"description": "Terminate session by pid"},
-        **IncorrectCredentialsException.responses,
-        **NoCredentialsException.responses,
-    },
-)
-async def terminate_session(
-    # user_id: int,
-    pid: int,
-    _verify_bot: Annotated[bool, DEPENDS_BOT],
-    # user_repository: Annotated[AbstractUserRepository, DEPENDS_USER_REPOSITORY],
-    pg_repository: Annotated[AbstractPgRepository, DEPENDS_PG_STAT_REPOSITORY],
-) -> PgTerminateSessionResult:
-    # _user = await user_repository.read(user_id)
-    success = await pg_repository.terminate_pg_backend(pid)
-
-    if not success:
-        return PgTerminateSessionResult(success=success, detail=f"Impossible to kill session with PID {pid}.")
-    return PgTerminateSessionResult(success=success)
 
 
 @router.get(
@@ -106,17 +70,17 @@ async def get_statistics(
     pg_stat_activity = await pg_repository.read_pg_stat(pg_stat_name=stat_name, limit=limit, offset=offset)
     if pg_stat_activity is None:
         return None
-    objects = []
+    rows = []
     for r in pg_stat_activity:
-        _ = dict()
+        row = dict()
         # translate to dict[str, str]
         for k, v in r.items():
             key = str(k)
             if v is None:
-                _[key] = None
+                row[key] = None
             elif isinstance(v, (bool, int, float)):
-                _[key] = v
+                row[key] = v
             else:
-                _[key] = str(v)
-        objects.append(_)
-    return objects
+                row[key] = str(v)
+        rows.append(row)
+    return rows

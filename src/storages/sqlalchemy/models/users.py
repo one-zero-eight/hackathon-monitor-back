@@ -2,8 +2,8 @@ __all__ = ["User", "EmailFlow"]
 
 from typing import Optional
 
-from sqlalchemy.orm import mapped_column, Mapped, relationship
 from sqlalchemy import ForeignKey, UniqueConstraint
+from sqlalchemy.orm import mapped_column, Mapped, relationship
 
 from src.storages.sqlalchemy.models.__mixin__ import IdMixin
 from src.storages.sqlalchemy.models.base import Base
