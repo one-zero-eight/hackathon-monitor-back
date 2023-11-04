@@ -8,9 +8,6 @@ postgres_password: postgres
 
 # ---------- Application settings ----- #
 app_root_path: ""
-# secret key for session cookie
-# - Run 'openssl rand -hex 32' to generate key or use any other method
-session_secret_key: 1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
 # verify requests from bot client
 bot_token: 1234567890:ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
 # CORS_ALLOW_ORIGINS=[]

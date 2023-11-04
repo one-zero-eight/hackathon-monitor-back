@@ -46,8 +46,6 @@ if settings.SMTP_ENABLED:
 else:
     warnings.warn("SMTP and email connection is disabled!")
 
-app.add_middleware(SessionMiddleware, secret_key=settings.SESSION_SECRET_KEY.get_secret_value())
-
 
 @app.on_event("startup")
 async def startup_event():

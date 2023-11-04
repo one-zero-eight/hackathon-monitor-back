@@ -82,12 +82,8 @@ class Settings(BaseModel):
 
     # Prefix for the API path (e.g. "/api/v0")
     APP_ROOT_PATH: str = ""
-
     # App environment
     ENVIRONMENT: Environment = Environment.DEVELOPMENT
-
-    # You can run 'openssl rand -hex 32' to generate keys
-    SESSION_SECRET_KEY: SecretStr
     BOT_TOKEN: SecretStr
     # PostgreSQL database connection URL
     DB_URL: SecretStr
