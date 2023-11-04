@@ -1,6 +1,16 @@
 global:
   scrape_interval: 15s
 
+rule_files:
+  - 'alert_rules.yml'
+
+alerting:
+  alertmanagers:
+    - scheme: http
+      static_configs:
+        - targets:
+            - 'alertmanager:9093'
+
 # Scrape configuration
 scrape_configs:
 
@@ -15,3 +25,9 @@ scrape_configs:
     scrape_interval: 10s
     static_configs:
       - targets: [ 'postgres_exporter:9187' ]
+
+  # Host machine
+  - job_name: 'node_exporter'
+    scrape_interval: 5s
+    static_configs:
+      - targets: [ 'host.docker.internal:9100' ]

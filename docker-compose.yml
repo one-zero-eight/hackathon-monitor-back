@@ -42,6 +42,9 @@ services:
       - "./prometheus:/etc/prometheus"
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--web.enable-lifecycle"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   grafana:
     image: grafana/grafana:10.1.5
@@ -57,6 +60,20 @@ services:
     container_name: postgres_exporter
     restart: always
     env_file: .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  alertmanager:
+    image: "prom/alertmanager:v0.26.0"
+    container_name: alertmanager
+    restart: always
+    volumes:
+      - "./alertmanager/:/etc/alertmanager/"
+    ports:
+      - "9093:9093"
+    command:
+      - "--config.file=/etc/alertmanager/config.yml"
+      - "--storage.path=/alertmanager"
     extra_hosts:
       - "host.docker.internal:host-gateway"
 

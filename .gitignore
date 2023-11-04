@@ -8,3 +8,5 @@ alembic.ini
 ### Sensible ###
 /private.pem
 /public.pem
+
+/prometheus/alert_rules.yml
