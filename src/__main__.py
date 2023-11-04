@@ -3,14 +3,11 @@ __all__ = ["app"]
 import warnings
 
 from fastapi import FastAPI
-from starlette.middleware.cors import CORSMiddleware
-from starlette.middleware.sessions import SessionMiddleware
 
 from src import constants
 from src.app import routers
 from src.config import settings, Environment
-from src.storages.monitoring.config import settings as monitoring_settings
-from src.utils import generate_unique_operation_id, setup_repositories, generate_prometheus_alert_rules
+from src.utils import generate_unique_operation_id, setup_repositories, generate_prometheus_configs
 
 app = FastAPI(
     title=constants.TITLE,
@@ -38,9 +35,7 @@ else:
 @app.on_event("startup")
 async def startup_event():
     await setup_repositories()
-    await generate_prometheus_alert_rules(
-        monitoring_settings.alerts, settings.PROMETHEUS.ALERT_RULES_PATH, settings.PROMETHEUS.URL
-    )
+    await generate_prometheus_configs()
 
 
 @app.on_event("shutdown")
