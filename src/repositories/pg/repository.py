@@ -84,7 +84,8 @@ class PgRepository(AbstractPgRepository):
                 pg_stat_database["no_state"] = pg_stat_database.pop(None)
                 return ViewPgStatActivitySummary(**pg_stat_database)
 
-    async def execute_sql(self, sql: str, fetchall: bool = False, /, **binds) -> Optional[list[dict[str, Any]]]:
+    async def execute_sql(self, sql: str, binds: dict[str, Any], fetchall: bool = False) -> Optional[
+        list[dict[str, Any]]]:
         async with self._create_session() as session:
             statement = text(sql)
             # get all params from statement
@@ -96,7 +97,7 @@ class PgRepository(AbstractPgRepository):
                 table_rows = r.fetchall()
                 return table_rows_to_list_of_dicts(list(table_rows))
 
-    async def execute_ssh(self, command: str, /, **binds) -> None:
+    async def execute_ssh(self, command: str, binds: dict[str, Any]) -> None:
         client = paramiko.client.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 

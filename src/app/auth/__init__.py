@@ -8,4 +8,5 @@ oauth = OAuth()
 
 # Register all OAuth applications and routes
 import src.app.auth.common  # noqa: E402, F401
-import src.app.auth.dev  # noqa: E402, F401
+import src.app.auth.telegram  # noqa: E402, F401
+import src.app.dependencies  # noqa: E402, F401

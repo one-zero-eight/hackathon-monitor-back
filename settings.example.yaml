@@ -1,0 +1,42 @@
+# ------ Infrastructure settings ------ #
+# needed for user creation and alert delivery
+db_url: postgresql+asyncpg://postgres:postgres@localhost:5432/postgres
+# migration url should be with sync driver
+alembic_db_url: postgresql://postgres:postgres@localhost:5432/postgres
+# needed for docker-compose
+postgres_password: postgres
+
+# ---------- Application settings ----- #
+app_root_path: ""
+# secret key for session cookie
+# - Run 'openssl rand -hex 32' to generate key or use any other method
+session_secret_key: 1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
+# verify requests from bot client
+bot_token: 1234567890:ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
+# CORS_ALLOW_ORIGINS=[]
+# COOKIES__DOMAINS=example.com
+# COOKIES__NAME=token
+# COOKIES__ALLOWED_DOMAINS=[example.com,example.org]
+
+# ---------- Target server settings ----- #
+target:
+    db_url: postgresql+asyncpg://postgres:postgres@localhost:5432/postgres
+    ssh_host: 10.10.10.10
+    ssh_port: 22
+    ssh_username: admin
+    ssh_password: admin
+    receivers: [1111111,2222222,333333333]
+
+# ---------- Prometheus settings ----- #
+prometheus:
+    host: http://10.10.10.10:9090
+    # path to alert rules file
+    # alert_rules_path: ./prometheus/alert_rules.yml
+
+# ---------- SMTP settings ----- #
+smtp_enabled: false
+smtp:
+    host: smtp.gmail.com
+    port: 587
+    username: a.a@gmail.com
+    password: my_super_password

@@ -27,9 +27,10 @@ class AbstractPgRepository(metaclass=ABCMeta):
         ...
 
     @abstractmethod
-    async def execute_sql(self, sql: str, fetchall: bool = False, /, **binds) -> Optional[list[dict[str, Any]]]:
+    async def execute_sql(self, sql: str, binds: dict[str, Any], fetchall: bool = False) -> Optional[
+        list[dict[str, Any]]]:
         ...
 
     @abstractmethod
-    async def execute_ssh(self, command: str, /, **binds) -> str:
+    async def execute_ssh(self, command: str, binds: dict[str, Any]) -> str:
         ...

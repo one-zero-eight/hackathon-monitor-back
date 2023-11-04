@@ -41,11 +41,6 @@ if settings.CORS_ALLOW_ORIGINS:
 else:
     warnings.warn("CORS is disabled!")
 
-if settings.JWT_ENABLED:
-    warnings.warn("Authorization with JWT is enabled!")
-else:
-    warnings.warn("Authorization with JWT is disabled!")
-
 if settings.SMTP_ENABLED:
     warnings.warn("SMTP and email connection is enabled!")
 else:

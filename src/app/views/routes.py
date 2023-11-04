@@ -36,7 +36,7 @@ async def _execute_view(
         if argument.required and argument_name not in arguments:
             raise ArgumentRequiredException(argument_name)
 
-    rows = await pg_repository.execute_sql(view.sql, True, **arguments)
+    rows = await pg_repository.execute_sql(view.sql, fetchall=True, binds=arguments)
 
     return rows
 
@@ -49,6 +49,7 @@ for view_alias, view in monitoring_settings.views.items():
     # for type hints
     _Arguments: type[BaseModel] = create_model(f"Arguments_{view_alias}", **_arguments)
 
+
     def wrapper(binded_view_alias: str):
         # for function closure (to pass action_alias)
         async def execute_action(
@@ -60,6 +61,7 @@ for view_alias, view in monitoring_settings.views.items():
             return await _execute_view(pg_repository, binded_view_alias, **arguments.model_dump(exclude_none=True))
 
         return execute_action
+
 
     router.add_api_route(
         f"/execute/{view_alias}",

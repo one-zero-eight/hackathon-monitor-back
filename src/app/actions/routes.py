@@ -24,9 +24,9 @@ async def _execute_action(pg_repository: AbstractPgRepository, action_alias: str
 
     for step in action.steps:
         if step.type == Action.Step.Type.sql:
-            await pg_repository.execute_sql(step.query, **arguments)
+            await pg_repository.execute_sql(step.query, binds=arguments)
         elif step.type == Action.Step.Type.ssh:
-            await pg_repository.execute_ssh(step.query, **arguments)
+            await pg_repository.execute_ssh(step.query, binds=arguments)
 
 
 # generate routes for each action
