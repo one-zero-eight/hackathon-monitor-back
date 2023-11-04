@@ -37,6 +37,7 @@ class Jwt(BaseModel):
 
 class Prometheus(BaseModel):
     URL: str = "http://localhost:9090"
+    ALERT_RULES_PATH: Path = Path("./prometheus/alert_rules.yml")
 
 
 class Target(BaseModel):

@@ -1,8 +1,13 @@
+import logging
 import re
+from pathlib import Path
 
+import httpx
+import yaml
 from fastapi.routing import APIRoute
 
 from src.config import settings
+from src.storages.monitoring.config import Alert
 
 
 async def setup_repositories():
@@ -38,3 +43,29 @@ def generate_unique_operation_id(route: APIRoute) -> str:
     operation_id = f"{route.tags[0]}_{route.name}".lower()
     operation_id = re.sub(r"\W+", "_", operation_id)
     return operation_id
+
+
+async def generate_prometheus_alert_rules(alerts: dict[str, Alert], path: Path, url: str):
+    # Generate config
+    rules = []
+    for alias, alert in alerts.items():
+        rules.append(
+            {
+                "alert": alias,
+                "expr": alert.rule.expr,
+                "for": alert.rule.for_,
+            }
+        )
+    rules_config = {"groups": [{"name": "db", "rules": rules}]}
+
+    # Dump to string and check if file has changed
+    rules_config = yaml.safe_dump(rules_config, sort_keys=False)
+    if path.exists() and path.read_text() == rules_config:
+        logging.info("Prometheus alert rules has not changed")
+        return
+
+    # Write to file and reload Prometheus
+    logging.warning("Prometheus alert rules has changed. Reloading Prometheus")
+    path.write_text(rules_config)
+    async with httpx.AsyncClient() as client:
+        await client.post(url + "/-/reload")

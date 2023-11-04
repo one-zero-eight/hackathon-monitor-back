@@ -9,7 +9,8 @@ from starlette.middleware.sessions import SessionMiddleware
 from src import constants
 from src.app import routers
 from src.config import settings, Environment
-from src.utils import generate_unique_operation_id, setup_repositories
+from src.storages.monitoring.config import settings as monitoring_settings
+from src.utils import generate_unique_operation_id, setup_repositories, generate_prometheus_alert_rules
 
 app = FastAPI(
     title=constants.TITLE,
@@ -45,6 +46,9 @@ app.add_middleware(SessionMiddleware, secret_key=settings.SESSION_SECRET_KEY.get
 @app.on_event("startup")
 async def startup_event():
     await setup_repositories()
+    await generate_prometheus_alert_rules(
+        monitoring_settings.alerts, settings.PROMETHEUS.ALERT_RULES_PATH, settings.PROMETHEUS.URL
+    )
 
 
 @app.on_event("shutdown")
