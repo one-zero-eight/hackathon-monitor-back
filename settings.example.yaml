@@ -1,13 +1,8 @@
 # ------ Infrastructure settings ------ #
 # needed for user creation and alert delivery
 db_url: postgresql+asyncpg://postgres:postgres@localhost:5432/postgres
-# migration url should be with sync driver
-alembic_db_url: postgresql://postgres:postgres@localhost:5432/postgres
-# needed for docker-compose
-postgres_password: postgres
 
 # ---------- Application settings ----- #
-app_root_path: ""
 # verify requests from bot client
 bot_token: 1234567890:ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
 
