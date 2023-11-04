@@ -13,6 +13,24 @@ from src.schemas.pg_stats import ViewPgStatActivity, ViewPgStatActivitySummary, 
 from src.storages.sqlalchemy import AbstractSQLAlchemyStorage
 
 
+def table_rows_to_list_of_dicts(table_rows: list[Row], /) -> list[dict[str, Any]]:
+    rows = []
+    for table_row in table_rows:
+        r = table_row._mapping
+        row = dict()
+        # translate to dict[str, str]
+        for k, v in r.items():
+            key = str(k)
+            if v is None:
+                row[key] = None
+            elif isinstance(v, (bool, int, float, str, datetime.datetime, datetime.date)):
+                row[key] = v
+            else:
+                row[key] = str(v)
+        rows.append(row)
+    return rows
+
+
 class PgRepository(AbstractPgRepository):
     def __init__(self, storage: AbstractSQLAlchemyStorage):
         self.storage = storage
@@ -78,7 +96,7 @@ class PgRepository(AbstractPgRepository):
                 table_rows = r.fetchall()
                 return table_rows_to_list_of_dicts(list(table_rows))
 
-    async def execute_ssh(self, command: str, /, **binds) -> str:
+    async def execute_ssh(self, command: str, /, **binds) -> None:
         client = paramiko.client.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
@@ -92,27 +110,5 @@ class PgRepository(AbstractPgRepository):
             username=settings.TARGET.SSH_USERNAME,
             password=settings.TARGET.SSH_PASSWORD,
         )
+        # TODO: Think how to fetch responses better
         _stdin, _stdout, _stderr = client.exec_command(binded)
-
-        # # TODO: add schema for stdin/stdout
-        # if _stderr:
-        #     return _stderr.read(256).decode()
-        # return _stdout.read(256).decode()
-
-
-def table_rows_to_list_of_dicts(table_rows: list[Row], /) -> list[dict[str, Any]]:
-    rows = []
-    for table_row in table_rows:
-        r = table_row._mapping
-        row = dict()
-        # translate to dict[str, str]
-        for k, v in r.items():
-            key = str(k)
-            if v is None:
-                row[key] = None
-            elif isinstance(v, (bool, int, float, str, datetime.datetime, datetime.date)):
-                row[key] = v
-            else:
-                row[key] = str(v)
-        rows.append(row)
-    return rows
