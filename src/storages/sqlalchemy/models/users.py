@@ -10,7 +10,6 @@ from src.storages.sqlalchemy.models.base import Base
 
 
 class User(Base):
-    __ownerships_tables__ = dict()
     __tablename__ = "users"
 
     name: Mapped[str] = mapped_column(nullable=True)

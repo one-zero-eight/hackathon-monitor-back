@@ -7,6 +7,7 @@ import yaml
 from fastapi.routing import APIRoute
 
 from src.config import settings
+from src.repositories.alerts import AlertRepository
 from src.storages.monitoring.config import Alert
 
 
@@ -20,13 +21,14 @@ async def setup_repositories():
     # ------------------- Repositories Dependencies -------------------
     storage = SQLAlchemyStorage.from_url(settings.DB_URL.get_secret_value())
     user_repository = UserRepository(storage)
-
+    alert_repository = AlertRepository(storage)
     target_storage = SQLAlchemyStorage.from_url(settings.TARGET.DB_URL.get_secret_value())
     pg_stat = PgRepository(target_storage)
 
     Dependencies.set_storage(storage)
     Dependencies.set_user_repository(user_repository)
     Dependencies.set_pg_stat_repository(pg_stat)
+    Dependencies.set_alert_repository(alert_repository)
 
     if settings.SMTP.ENABLE:
         smtp_repository = SMTPRepository()

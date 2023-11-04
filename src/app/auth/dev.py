@@ -22,7 +22,6 @@ if enabled:
         "(otherwise, set ENVIRONMENT=production)."
     )
 
-
     @router.get("/dev/login", include_in_schema=False)
     async def dev_login(
         telegram_id: int,
@@ -45,14 +44,12 @@ if enabled:
         token = TokenRepository.create_access_token(user.telegram_id)
         return redirect_with_token(return_to, token)
 
-
     @router.get("/dev/token")
     async def get_dev_token(
         user_repository: Annotated[AbstractUserRepository, DEPENDS_USER_REPOSITORY],
         telegram_id: int,
         telegram_first_name="Alex",
     ) -> str:
-
         existing_user = await user_repository.read(telegram_id)
         if existing_user:
             return TokenRepository.create_access_token(existing_user.telegram_id)

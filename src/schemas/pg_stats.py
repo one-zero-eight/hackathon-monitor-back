@@ -1,5 +1,4 @@
-__all__ = ["ViewPgStatActivity", "ViewPgStatDatabase",
-           "ViewPgStatActivitySummary", "PgStat"]
+__all__ = ["ViewPgStatActivity", "ViewPgStatDatabase", "ViewPgStatActivitySummary", "PgStat"]
 
 import datetime
 from enum import StrEnum

@@ -7,7 +7,8 @@ from src.app.dependencies import DEPENDS_SMTP_REPOSITORY, DEPENDS_USER_REPOSITOR
 from src.app.users import router
 from src.exceptions import (
     IncorrectCredentialsException,
-    NoCredentialsException, UserAlreadyExistsException,
+    NoCredentialsException,
+    UserAlreadyExistsException,
 )
 from src.repositories.smtp.abc import AbstractSMTPRepository
 from src.repositories.users import AbstractUserRepository

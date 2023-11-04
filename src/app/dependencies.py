@@ -7,6 +7,7 @@ __all__ = [
     "DEPENDS_CURRENT_USER_ID",
     "DEPENDS_WEBAPP",
     "DEPENDS_PG_STAT_REPOSITORY",
+    "DEPENDS_ALERT_REPOSITORY",
     "Dependencies",
 ]
 
@@ -14,7 +15,8 @@ from fastapi import Depends
 
 from src.repositories.pg.abc import AbstractPgRepository
 from src.repositories.smtp.abc import AbstractSMTPRepository
-from src.repositories.users import AbstractUserRepository
+from src.repositories.users.abc import AbstractUserRepository
+from src.repositories.alerts.abc import AbstractAlertRepository
 from src.storages.sqlalchemy.storage import AbstractSQLAlchemyStorage
 
 
@@ -23,6 +25,7 @@ class Dependencies:
     _user_repository: "AbstractUserRepository"
     _smtp_repository: "AbstractSMTPRepository"
     _pg_stat_repository: "AbstractPgRepository"
+    _alert_repository: "AbstractAlertRepository"
 
     @classmethod
     def get_storage(cls) -> "AbstractSQLAlchemyStorage":
@@ -56,6 +59,14 @@ class Dependencies:
     def set_pg_stat_repository(cls, pg_stat_repository: "AbstractPgRepository"):
         cls._pg_stat_repository = pg_stat_repository
 
+    @classmethod
+    def get_alert_repository(cls) -> "AbstractAlertRepository":
+        return cls._alert_repository
+
+    @classmethod
+    def set_alert_repository(cls, alert_repository: "AbstractAlertRepository"):
+        cls._alert_repository = alert_repository
+
 
 DEPENDS = Depends(lambda: Dependencies)
 """It's a dependency injection container for FastAPI.
@@ -64,6 +75,7 @@ DEPENDS_STORAGE = Depends(Dependencies.get_storage)
 DEPENDS_USER_REPOSITORY = Depends(Dependencies.get_user_repository)
 DEPENDS_SMTP_REPOSITORY = Depends(Dependencies.get_smtp_repository)
 DEPENDS_PG_STAT_REPOSITORY = Depends(Dependencies.get_pg_stat_repository)
+DEPENDS_ALERT_REPOSITORY = Depends(Dependencies.get_alert_repository)
 
 from src.app.auth.dependencies import get_current_user_id, verify_bot_token, verify_webapp  # noqa: E402
 

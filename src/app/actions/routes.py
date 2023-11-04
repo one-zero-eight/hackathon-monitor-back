@@ -60,8 +60,7 @@ async def get_actions(
 ) -> list[ActionWithAlias]:
     return [
         ActionWithAlias(**action.dict(), alias=action_alias)
-        for action_alias, action in
-        monitoring_settings.actions.items()
+        for action_alias, action in monitoring_settings.actions.items()
     ]
 
 

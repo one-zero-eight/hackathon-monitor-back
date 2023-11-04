@@ -1,6 +1,5 @@
 import jinja2
 import paramiko
-from paramiko.channel import ChannelStderrFile, ChannelFile
 from sqlalchemy import RowMapping
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import text
@@ -80,10 +79,12 @@ class PgRepository(AbstractPgRepository):
         command_template = jinja2.Environment(autoescape=True).from_string(command)
         binds.update({"password": settings.TARGET.SSH_PASSWORD})
         binded = command_template.render(**binds)
-        client.connect(hostname=settings.TARGET.SSH_HOST,
-                       port=settings.TARGET.SSH_PORT,
-                       username=settings.TARGET.SSH_USERNAME,
-                       password=settings.TARGET.SSH_PASSWORD)
+        client.connect(
+            hostname=settings.TARGET.SSH_HOST,
+            port=settings.TARGET.SSH_PORT,
+            username=settings.TARGET.SSH_USERNAME,
+            password=settings.TARGET.SSH_PASSWORD,
+        )
         _stdin, _stdout, _stderr = client.exec_command(binded)  # noqa
         if _stderr:
             return _stderr.read().decode()

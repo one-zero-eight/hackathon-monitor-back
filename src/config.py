@@ -46,6 +46,14 @@ class Target(BaseModel):
     SSH_PORT: int = 22
     SSH_USERNAME: str
     SSH_PASSWORD: str
+    RECEIVERS: list[int] = Field(default_factory=list)
+
+    @field_validator("RECEIVERS", mode="before")
+    @classmethod
+    def parse_receivers(cls, value):
+        if isinstance(value, str):
+            return [int(i) for i in value.split()]
+        return value
 
 
 class Smtp(BaseModel):

@@ -2,9 +2,8 @@ alerts:
   max_connections_reached:
     title: PostgreSQL Max Connections Reached
     description: PostgreSQL is maxed out on connections.
-    severity: 50
+    severity: warning
     rule:
-      alert:
       expr: sum(pg_stat_activity_count) by (instance) >= sum(pg_settings_max_connections) by (instance) - sum(pg_settings_superuser_reserved_connections) by (instance)
       for: 1m
       annotations:
@@ -16,7 +15,7 @@ alerts:
   high_connections:
     title: PostgreSQL High Connections
     description: PostgreSQL is exceeding 80% of the maximum connection limit.
-    severity: 50
+    severity: warning
     rule:
       expr: sum(pg_stat_activity_count) by (instance) > (sum(pg_settings_max_connections) by (instance) - sum(pg_settings_superuser_reserved_connections) by (instance)) * 0.8
       for: 10m
@@ -29,7 +28,7 @@ alerts:
   postgresql_down:
     title: PostgreSQL Down
     description: PostgreSQL is not processing queries.
-    severity: 50
+    severity: warning
     rule:
       expr: pg_up != 1
       for: 1m
@@ -42,7 +41,7 @@ alerts:
   slow_queries:
     title: PostgreSQL Slow Queries
     description: High number of slow queries in PostgreSQL.
-    severity: 50
+    severity: warning
     rule:
       expr: avg(rate(pg_stat_activity_max_tx_duration{datname!~"template.*"}[2m])) by (datname) > 2 * 60
       for: 2m
@@ -55,7 +54,7 @@ alerts:
   qps:
     title: PostgreSQL QPS
     description: High number of queries per second in PostgreSQL.
-    severity: 50
+    severity: warning
     rule:
       expr: avg(irate(pg_stat_database_xact_commit{datname!~"template.*"}[5m]) + irate(pg_stat_database_xact_rollback{datname!~"template.*"}[5m])) by (datname) > 10000
       for: 5m
@@ -68,7 +67,7 @@ alerts:
   cache_hit_ratio:
     title: PostgreSQL Cache Hit Ratio
     description: Low cache hit rate in PostgreSQL.
-    severity: 50
+    severity: warning
     rule:
       expr: avg(rate(pg_stat_database_blks_hit{datname!~"template.*"}[5m]) / (rate(pg_stat_database_blks_hit{datname!~"template.*"}[5m]) + rate(pg_stat_database_blks_read{datname!~"template.*"}[5m]))) by (datname) < 0.98
       for: 5m
@@ -79,4 +78,3 @@ alerts:
     related_graphs: []
 
 # Add more alerts here if needed
-

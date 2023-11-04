@@ -16,7 +16,7 @@ class Alert(BaseModel):
 
     title: str
     description: str
-    severity: int
+    severity: str
 
     rule: Rule
 
