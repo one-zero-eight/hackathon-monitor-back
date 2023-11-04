@@ -10,10 +10,6 @@ postgres_password: postgres
 app_root_path: ""
 # verify requests from bot client
 bot_token: 1234567890:ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
-# CORS_ALLOW_ORIGINS=[]
-# COOKIES__DOMAINS=example.com
-# COOKIES__NAME=token
-# COOKIES__ALLOWED_DOMAINS=[example.com,example.org]
 
 # ---------- Target server settings ----- #
 targets:

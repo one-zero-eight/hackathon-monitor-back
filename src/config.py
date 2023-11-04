@@ -96,9 +96,6 @@ class Settings(BaseModel):
     SMTP: Optional[Smtp] = None
     # Prometheus settings
     PROMETHEUS: Prometheus = Field(default_factory=Prometheus)
-    # Security
-    CORS_ALLOW_ORIGINS: list[str] = []
-
     # Monitoring
     ALERTS_CONFIG_PATH: Path = Path("alerts.yaml")
     ACTIONS_CONFIG_PATH: Path = Path("actions.yaml")

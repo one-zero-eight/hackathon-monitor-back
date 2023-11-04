@@ -29,18 +29,6 @@ app = FastAPI(
     generate_unique_id_function=generate_unique_operation_id,
 )
 
-if settings.CORS_ALLOW_ORIGINS:
-    warnings.warn("CORS is enabled!")
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=settings.CORS_ALLOW_ORIGINS,
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
-else:
-    warnings.warn("CORS is disabled!")
-
 if settings.SMTP_ENABLED:
     warnings.warn("SMTP and email connection is enabled!")
 else:
