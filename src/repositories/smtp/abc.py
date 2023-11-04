@@ -21,3 +21,14 @@ class AbstractSMTPRepository(metaclass=ABCMeta):
         :param email: email address.
         :param auth_code: auth code.
         """
+
+    @abstractmethod
+    async def send_alert_message(
+        self,
+        email: str,
+    ):
+        """
+        Send message to email.
+
+        :param email: email address.
+        """

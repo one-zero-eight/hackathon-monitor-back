@@ -18,4 +18,4 @@ scrape_configs:
     - 10.91.6.95:9187
     - 10.91.6.95:9100
     labels:
-      target: main
+      target: artem

@@ -16,6 +16,16 @@ class TelegramWidgetData(BaseModel):
     username: Optional[str] = None
     photo_url: Optional[str] = None
 
+    @classmethod
+    def parse_from_string(cls, string: str) -> "TelegramWidgetData":
+        """
+        Parse telegram widget data from string
+        """
+        from urllib.parse import parse_qs
+
+        params = parse_qs(string)
+        return cls.model_validate(params)
+
     @property
     def string_to_hash(self) -> str:
         return "\n".join([f"{k}={getattr(self, k)}" for k in sorted(self.model_fields.keys()) if k != "hash"])

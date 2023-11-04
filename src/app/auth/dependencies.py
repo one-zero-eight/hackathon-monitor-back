@@ -34,6 +34,7 @@ async def verify_bot_token(
     :param token: JWT token from header or cookie
     :return: True if token is valid
     """
+
     if not token:
         raise NoCredentialsException()
 
@@ -44,7 +45,7 @@ async def verify_bot_token(
 
 
 def verify_webapp(
-    telegram_data: TelegramWidgetData,
+    bearer: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme),
 ) -> bool:
     """
     Verify telegram data
@@ -52,6 +53,12 @@ def verify_webapp(
     https://core.telegram.org/widgets/login#checking-authorization
     :raises IncorrectCredentialsException: if hash is invalid
     """
+
+    if not bearer:
+        raise NoCredentialsException()
+
+    telegram_data = TelegramWidgetData.parse_from_string(bearer.credentials)
+
     if not telegram_check_authorization(telegram_data):
         raise IncorrectCredentialsException()
 
