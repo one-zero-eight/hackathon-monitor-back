@@ -62,6 +62,7 @@ class Target(BaseModel):
         if isinstance(value, str):
             # [11111,222222] -> [11111, 222222]
             import re
+
             # all numbers in string
             value = re.findall(r"\d+", value)
             return [int(v) for v in value]

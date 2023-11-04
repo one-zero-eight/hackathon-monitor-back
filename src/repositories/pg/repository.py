@@ -3,7 +3,7 @@ from typing import Optional, Any
 
 import jinja2
 import paramiko
-from sqlalchemy import RowMapping, Row, Sequence
+from sqlalchemy import Row
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import text
 
@@ -79,7 +79,6 @@ class PgRepository(AbstractPgRepository):
                 return table_rows_to_list_of_dicts(list(table_rows))
 
     async def execute_ssh(self, command: str, /, **binds) -> str:
-
         client = paramiko.client.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 

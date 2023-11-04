@@ -82,5 +82,5 @@ class MonitoringConfig(BaseModel):
 settings = MonitoringConfig.from_yamls(
     alert_path=app_settings.ALERTS_CONFIG_PATH,
     actions_path=app_settings.ACTIONS_CONFIG_PATH,
-    views_path=app_settings.VIEWS_CONFIG_PATH
+    views_path=app_settings.VIEWS_CONFIG_PATH,
 )

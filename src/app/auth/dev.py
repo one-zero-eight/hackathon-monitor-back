@@ -8,7 +8,6 @@ from src.repositories.users import AbstractUserRepository
 enabled = settings.ENVIRONMENT == Environment.DEVELOPMENT
 
 if enabled:
-
     if settings.JWT_ENABLED:
         import warnings
         from src.app.auth import router
@@ -22,7 +21,6 @@ if enabled:
             "Use this only for development environment "
             "(otherwise, set ENVIRONMENT=production)."
         )
-
 
         @router.get("/dev/login", include_in_schema=False)
         async def dev_login(
@@ -45,7 +43,6 @@ if enabled:
             user = await user_repository.create(user=scheme)
             token = TokenRepository.create_access_token(user.telegram_id)
             return redirect_with_token(return_to, token)
-
 
         @router.get("/dev/token")
         async def get_dev_token(

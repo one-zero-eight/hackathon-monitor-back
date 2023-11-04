@@ -16,6 +16,7 @@ from src.repositories.users import AbstractUserRepository
 from src.schemas.users import ViewUser, CreateUser
 
 if settings.JWT_ENABLED:
+
     @router.get(
         "/me",
         responses={
@@ -80,6 +81,7 @@ async def register_via_telegram(
         raise UserAlreadyExistsException()
     await user_repository.create(user)
 
+
 if settings.SMTP_ENABLED:
 
     @router.post("/connect-email", tags=["Email"])
@@ -97,7 +99,6 @@ if settings.SMTP_ENABLED:
 
         email_flow = await user_repository.start_connect_email(user_id, email)
         background_tasks.add_task(smtp_repository.send_connect_email, email_flow.email, email_flow.auth_code)
-
 
     @router.post("/connect-email/finish", tags=["Email"])
     async def finish_connect_email(

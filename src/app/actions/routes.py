@@ -5,17 +5,17 @@ from pydantic import BaseModel, create_model
 
 from src.app.actions import router
 from src.app.dependencies import DEPENDS_BOT, DEPENDS_PG_STAT_REPOSITORY
-from src.exceptions import (ActionNotFoundException, IncorrectCredentialsException, NoCredentialsException,
-                            ArgumentRequiredException)
+from src.exceptions import (
+    ActionNotFoundException,
+    IncorrectCredentialsException,
+    NoCredentialsException,
+    ArgumentRequiredException,
+)
 from src.repositories.pg import AbstractPgRepository
 from src.storages.monitoring.config import settings as monitoring_settings, Action
 
 
-async def _execute_action(
-    pg_repository: AbstractPgRepository,
-    action_alias: str,
-    **arguments
-):
+async def _execute_action(pg_repository: AbstractPgRepository, action_alias: str, **arguments):
     action = monitoring_settings.actions.get(action_alias)
     # ensure all required arguments are provided
     for argument_name, argument in action.arguments.items():
@@ -32,30 +32,22 @@ async def _execute_action(
 # generate routes for each action
 for action_alias, action in monitoring_settings.actions.items():
     _arguments = {
-        argument_name: (
-            argument.type,
-            argument.field_info()
-        )
-        for argument_name, argument in action.arguments.items()
+        argument_name: (argument.type, argument.field_info()) for argument_name, argument in action.arguments.items()
     }
     # for type hints
-    _Arguments: type[BaseModel] = create_model(
-        f"Arguments_{action_alias}", **_arguments
-    )
-
+    _Arguments: type[BaseModel] = create_model(f"Arguments_{action_alias}", **_arguments)
 
     def wrapper(binded_action_alias: str):
         # for function closure (to pass action_alias)
         async def execute_action(
             _bot: Annotated[bool, DEPENDS_BOT],
             pg_repository: Annotated[AbstractPgRepository, DEPENDS_PG_STAT_REPOSITORY],
-            arguments: _Arguments
+            arguments: _Arguments,
         ):
             arguments: BaseModel
             return await _execute_action(pg_repository, binded_action_alias, **arguments.model_dump(exclude_none=True))
 
         return execute_action
-
 
     router.add_api_route(
         f"/execute/{action_alias}",

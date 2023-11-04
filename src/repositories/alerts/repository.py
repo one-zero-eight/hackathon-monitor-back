@@ -58,7 +58,6 @@ def map_alert(alert: AlertDB, id_: int) -> MappedAlert:
 
 
 class AlertRepository(AbstractAlertRepository):
-
     def __init__(self, storage: AbstractSQLAlchemyStorage):
         self.storage = storage
 
@@ -104,8 +103,8 @@ class AlertRepository(AbstractAlertRepository):
             if existing:
                 existing_ids = {r.alert_id for r in existing}
                 existing_ids &= set(receivers)
-                statement = update(AlertDelivery).where(AlertDelivery.alert_id.in_(existing_ids)).values(
-                    delivered=False
+                statement = (
+                    update(AlertDelivery).where(AlertDelivery.alert_id.in_(existing_ids)).values(delivered=False)
                 )
                 await session.execute(statement)
                 await session.commit()
@@ -126,12 +125,19 @@ class AlertRepository(AbstractAlertRepository):
 
     async def stop_delivery(self, alert_id: int, receivers: list[int]):
         async with self._create_session() as session:
-            q = select(AlertDelivery).where(and_(AlertDelivery.alert_id == alert_id, not_(AlertDelivery.delivered),
-                                                 AlertDelivery.receiver_id.in_(receivers)))
+            q = select(AlertDelivery).where(
+                and_(
+                    AlertDelivery.alert_id == alert_id,
+                    not_(AlertDelivery.delivered),
+                    AlertDelivery.receiver_id.in_(receivers),
+                )
+            )
             to_be_updated = await session.scalars(q)
             if to_be_updated:
-                statement = update(AlertDelivery).where(AlertDelivery.id.in_([r.id for r in to_be_updated])).values(
-                    delivered=True
+                statement = (
+                    update(AlertDelivery)
+                    .where(AlertDelivery.id.in_([r.id for r in to_be_updated]))
+                    .values(delivered=True)
                 )
                 await session.execute(statement)
                 await session.commit()
