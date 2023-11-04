@@ -67,7 +67,8 @@ async def webhook(
     alert_repository: Annotated[AbstractAlertRepository, DEPENDS_ALERT_REPOSITORY],
     data: AlertManagerRequest,
 ):
-    receivers = settings.TARGET.RECEIVERS
+    # TODO: Resolve multiple targets
+    receivers = settings.TARGETS[0].RECEIVERS
 
     for alert in data.alerts:
         # get alertname

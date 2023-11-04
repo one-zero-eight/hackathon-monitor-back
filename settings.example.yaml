@@ -19,8 +19,8 @@ bot_token: 1234567890:ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
 # COOKIES__ALLOWED_DOMAINS=[example.com,example.org]
 
 # ---------- Target server settings ----- #
-target:
-    db_url: postgresql+asyncpg://postgres:postgres@localhost:5432/postgres
+targets:
+-   db_url: postgresql+asyncpg://postgres:postgres@localhost:5432/postgres
     ssh_host: 10.10.10.10
     ssh_port: 22
     ssh_username: admin

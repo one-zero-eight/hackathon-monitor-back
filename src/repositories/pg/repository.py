@@ -7,7 +7,7 @@ from sqlalchemy import Row
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import text
 
-from src.config import settings
+from src.config import settings, Target
 from src.repositories.pg.abc import AbstractPgRepository
 from src.schemas.pg_stats import ViewPgStatActivity, ViewPgStatActivitySummary, PgStat
 from src.storages.sqlalchemy import AbstractSQLAlchemyStorage
@@ -104,12 +104,19 @@ class PgRepository(AbstractPgRepository):
         command_template = jinja2.Environment(autoescape=True).from_string(command)
 
         binds.update(**settings.flatten())
-        binded = command_template.render(**binds)
+        # TODO: Resolve multiple targets
+        target: Target = settings.TARGETS[0]
+        target_binds = {
+            f"TARGET__{key}": value
+            for key, value in target.model_dump().items()
+        }
+
+        binded = command_template.render(**binds, **target_binds)
         client.connect(
-            hostname=settings.TARGET.SSH_HOST,
-            port=settings.TARGET.SSH_PORT,
-            username=settings.TARGET.SSH_USERNAME,
-            password=settings.TARGET.SSH_PASSWORD,
+            hostname=target.SSH_HOST,
+            port=target.SSH_PORT,
+            username=target.SSH_USERNAME,
+            password=target.SSH_PASSWORD,
         )
         # TODO: Think how to fetch responses better
         _stdin, _stdout, _stderr = client.exec_command(binded)

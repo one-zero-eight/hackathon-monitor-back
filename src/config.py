@@ -92,7 +92,7 @@ class Settings(BaseModel):
     # PostgreSQL database connection URL
     DB_URL: SecretStr
     # Target DB and SSH for monitoring
-    TARGET: Target = Field(default_factory=Target)
+    TARGETS: list[Target] = Field(default_factory=list)
     # Authentication
     COOKIE: Cookies = Field(default_factory=Cookies)
     # SMTP server settings
@@ -112,8 +112,8 @@ class Settings(BaseModel):
         """
         Flatten settings to dict.
         """
-        nested = self.model_dump(include={"TARGET", "AUTH", "SMTP", "PROMETHEUS"})
-        flattened = self.model_dump(exclude={"model_config", "TARGET", "AUTH", "SMTP", "PROMETHEUS"})
+        nested = self.model_dump(include={"AUTH", "SMTP", "PROMETHEUS"})
+        flattened = self.model_dump(exclude={"model_config", "AUTH", "SMTP", "PROMETHEUS"})
 
         for key, value in nested.items():
             if isinstance(value, dict):
