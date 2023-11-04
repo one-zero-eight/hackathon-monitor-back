@@ -46,8 +46,9 @@ class Action(BaseModel):
 
     title: str
     description: str
-    arguments: dict[str, Argument] = None
+    arguments: dict[str, Argument] = Field(default_factory=dict)
     steps: list[Step]
+
 
 class Graph(BaseModel):
     title: str

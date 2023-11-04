@@ -35,7 +35,3 @@ class AbstractPgRepository(metaclass=ABCMeta):
     @abstractmethod
     async def execute_ssh(self, command: str, /, **binds) -> str:
         ...
-
-    @abstractmethod
-    async def execute_ssh(self, command: str, /, **binds) -> str:
-        ...

@@ -9,7 +9,6 @@ from src.config import settings
 from src.repositories.pg.abc import AbstractPgRepository
 from src.schemas.pg_stats import ViewPgStatActivity, ViewPgStatActivitySummary, PgStat
 from src.storages.sqlalchemy import AbstractSQLAlchemyStorage
-from shlex import quote as shlex_quote
 
 
 class PgRepository(AbstractPgRepository):
@@ -74,19 +73,18 @@ class PgRepository(AbstractPgRepository):
             statement = statement.bindparams(**binds)
             await session.execute(statement)
 
-    async def execute_ssh(self, command: str, /, **binds) -> ChannelStderrFile | ChannelFile:
+    async def execute_ssh(self, command: str, /, **binds) -> str:
         client = paramiko.client.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
         command_template = jinja2.Environment(autoescape=True).from_string(command)
-        binds.update({"password": settings.TARGET.SSH_CREDENTIALS_PASSWORD})
+        binds.update({"password": settings.TARGET.SSH_PASSWORD})
         binded = command_template.render(**binds)
         client.connect(hostname=settings.TARGET.SSH_HOST,
                        port=settings.TARGET.SSH_PORT,
                        username=settings.TARGET.SSH_USERNAME,
                        password=settings.TARGET.SSH_PASSWORD)
-        _stdin, _stdout, _stderr = client.exec_command(shlex_quote(binded))  # noqa
-
+        _stdin, _stdout, _stderr = client.exec_command(binded)  # noqa
         if _stderr:
-            return _stderr
-        return _stdout
+            return _stderr.read().decode()
+        return _stdout.read().decode()

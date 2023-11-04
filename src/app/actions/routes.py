@@ -2,7 +2,7 @@ from typing import Annotated, Union
 
 from src.app.actions import router
 from src.app.dependencies import DEPENDS_BOT, DEPENDS_PG_STAT_REPOSITORY
-from src.exceptions import IncorrectCredentialsException, NoCredentialsException
+from src.exceptions import IncorrectCredentialsException, NoCredentialsException, ArgumentRequiredException
 from src.repositories.pg import AbstractPgRepository
 
 from src.storages.monitoring.config import settings as monitoring_settings, Action
@@ -63,3 +63,23 @@ async def get_actions(
         for action_alias, action in
         monitoring_settings.actions.items()
     ]
+
+
+@router.get(
+    "/{action_alias}",
+    responses={
+        200: {"description": "Execute action by alias"},
+        **IncorrectCredentialsException.responses,
+        **NoCredentialsException.responses,
+    },
+)
+async def get_action(
+    _bot: Annotated[bool, DEPENDS_BOT],
+    action_alias: str,
+) -> ActionWithAlias:
+    action: Action = monitoring_settings.actions.get(action_alias, None)
+
+    if action is None:
+        raise ActionNotFoundException(action_alias)
+
+    return ActionWithAlias(**action.model_dump(), alias=action_alias)

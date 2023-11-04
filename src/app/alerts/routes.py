@@ -1,6 +1,6 @@
 from src.app.alerts import router
 
-@router.post("/webhook"
+@router.post("/alertmanager-callback", status_code=200)
 async def webhook():
     """{
   "receiver": "webhook-critical",

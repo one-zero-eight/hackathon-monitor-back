@@ -10,6 +10,7 @@ __all__ = [
     "DBUserAlreadyExists",
     "ActionNotFoundException",
     "UserAlreadyHasEmail",
+    "ArgumentRequiredException",
 ]
 
 from typing import Optional
