@@ -1,3 +1,5 @@
+import datetime
+
 from sqlalchemy import insert, select, update, and_, not_
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -15,11 +17,18 @@ def map_alert(alert: AlertDB, id_: int) -> MappedAlert:
 
     configurated = configurated_alerts.get(alert.alias)
     if configurated:
+        status = json_["status"]
+        description = configurated.description
+
+        if annotations := json_.get("annotations"):
+            if _description := annotations.get("description"):
+                description = _description
         return MappedAlert(
             id=id_,
+            status=status,
             alias=alert.alias,
             title=configurated.title,
-            description=configurated.description,
+            description=description,
             severity=configurated.severity,
             value=alert.value,
             timestamp=alert.timestamp,
@@ -27,7 +36,8 @@ def map_alert(alert: AlertDB, id_: int) -> MappedAlert:
             related_graphs=configurated.related_graphs,
         )
     else:
-        from_json = {}
+        from_json = {"status": json_["status"]}
+
         if annotations := json_.get("annotations"):
             if title := annotations.get("title"):
                 from_json["title"] = title
@@ -55,12 +65,20 @@ class AlertRepository(AbstractAlertRepository):
     def _create_session(self) -> AsyncSession:
         return self.storage.create_session()
 
-    async def check_delivery(self) -> list["AlertDeliveryScheme"]:
+    async def check_delivery(self, starting: datetime.datetime) -> list["AlertDeliveryScheme"]:
         async with self._create_session() as session:
             q = select(AlertDelivery).where(not_(AlertDelivery.delivered))
             result = await session.scalars(q)
             if result:
-                return [AlertDeliveryScheme.model_validate(r, from_attributes=True) for r in result]
+                deliveries = [AlertDeliveryScheme.model_validate(r, from_attributes=True) for r in result]
+
+                alert_ids = {d.alert_id for d in deliveries}
+                q = select(Alert).where(and_(Alert.id.in_(alert_ids), Alert.timestamp >= starting))
+                filtered = await session.scalars(q)
+                target_alerts = {r.id for r in filtered}
+
+                return [d for d in deliveries if d.alert_id in target_alerts]
+
             else:
                 return []
 

@@ -110,6 +110,22 @@ class Settings(BaseSettings):
     ALERTS_CONFIG_PATH: Path = Path("alerts.yaml")
     ACTIONS_CONFIG_PATH: Path = Path("actions.yaml")
 
+    def flatten(self):
+        """
+        Flatten settings to dict.
+        """
+        nested = self.model_dump(include={"JWT", "TARGET", "AUTH", "SMTP", "PROMETHEUS"})
+        flattened = self.model_dump(exclude={"model_config", "JWT", "TARGET", "AUTH", "SMTP", "PROMETHEUS"})
+
+        for key, value in nested.items():
+            if isinstance(value, dict):
+                for k, v in value.items():
+                    flattened[f"{key}__{k}"] = v
+            else:
+                flattened[key] = value
+
+        return flattened
+
 
 # class DbConfig(BaseModel):
 #     host: str = Field(examples=["localhost"])

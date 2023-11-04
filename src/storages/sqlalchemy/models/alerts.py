@@ -2,7 +2,7 @@ import datetime
 from typing import Any
 
 from sqlalchemy.orm import mapped_column, Mapped
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, DateTime
 
 from src.storages.sqlalchemy.models.__mixin__ import IdMixin
 from src.storages.sqlalchemy.models.base import Base
@@ -12,7 +12,7 @@ class Alert(Base, IdMixin):
     __tablename__ = "alerts"
 
     alias: Mapped[str] = mapped_column(nullable=False)
-    timestamp: Mapped[datetime.datetime] = mapped_column(nullable=False)
+    timestamp: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     value: Mapped[dict[str, Any]] = mapped_column(nullable=False)
 
 

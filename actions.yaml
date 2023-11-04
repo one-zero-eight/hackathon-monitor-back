@@ -1,18 +1,21 @@
 actions:
     terminate_session:
-        title: Terminate Session
-        description: Terminate a PostgreSQL session by PID.
+        title: Завершить сеанс
+        description: Завершить сеанс PostgreSQL по PID.
         arguments:
             pid:
-                description: The PID of the session to terminate.
+                description: PID сеанса для завершения.
                 type: int
+            test:
+                description: aasdasd
+                type: list[str]
         steps:
             - type: sql
               query: SELECT pg_terminate_backend(:pid)
 
     restart_db:
-        title: Restart Database
-        description: Activate checkpoint and then restart database.
+        title: Перезапустить базу данных
+        description: Активировать контрольную точку и затем перезапустить базу данных.
         steps:
             - type: sql
               query: CHECKPOINT;
@@ -20,12 +23,12 @@ actions:
               query: echo {{ TARGET__SSH_PASSWORD }} | sudo -S systemctl restart postgresql
 
     create_dump:
-        title: Create Dump
-        description: Create dump of current database.
+        title: Создать дамп
+        description: Создать дамп текущей базы данных.
         arguments:
             dump_name:
-                description: Name of the dump.
-                type: string
+                description: Название файла дампа. Должно быть уникальным для каждого дампа.
+                type: str
         steps:
             - type: ssh
               query: pg_dump --dbname={{ TARGET__DB_URL }} | gzip > tmp/{{ dump_name }}.gz

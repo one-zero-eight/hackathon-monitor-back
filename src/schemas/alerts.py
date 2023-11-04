@@ -12,6 +12,7 @@ class AlertDB(BaseModel):
 
 class MappedAlert(BaseModel):
     id: int
+    status: Optional[str] = None
     alias: str
     value: dict[str, Any]
     timestamp: datetime.datetime

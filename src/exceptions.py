@@ -11,6 +11,7 @@ __all__ = [
     "ActionNotFoundException",
     "UserAlreadyHasEmail",
     "ArgumentRequiredException",
+    "WrongArgumentTypeException",
 ]
 
 from typing import Optional
@@ -196,3 +197,17 @@ class ArgumentRequiredException(HTTPException):
         )
 
     responses = {400: {"description": "Argument is required"}}
+
+
+class WrongArgumentTypeException(HTTPException):
+    """
+    HTTP_400_BAD_REQUEST
+    """
+
+    def __init__(self, argument_name: str, argument_type: str):
+        super().__init__(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Argument `{argument_name}` must be of type `{argument_type}`",
+        )
+
+    responses = {400: {"description": "Argument must be of type"}}

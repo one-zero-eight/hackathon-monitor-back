@@ -1,5 +1,6 @@
 __all__ = ["AbstractAlertRepository"]
 
+import datetime
 from abc import ABCMeta, abstractmethod
 
 from src.schemas.alerts import AlertDB, MappedAlert, AlertDeliveryScheme
@@ -23,5 +24,5 @@ class AbstractAlertRepository(metaclass=ABCMeta):
         ...
 
     @abstractmethod
-    async def check_delivery(self) -> list["AlertDeliveryScheme"]:
+    async def check_delivery(self, starting: datetime.datetime) -> list["AlertDeliveryScheme"]:
         ...

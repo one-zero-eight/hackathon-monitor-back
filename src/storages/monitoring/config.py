@@ -4,6 +4,7 @@ from typing import Any, Optional
 
 import yaml
 from pydantic import BaseModel, Field
+from pydantic.fields import FieldInfo
 
 from src.config import settings as app_settings
 
@@ -34,15 +35,16 @@ class Action(BaseModel):
         query: str
 
     class Argument(BaseModel):
-        class Type(StrEnum):
-            string = "string"
-            int = "int"
-            float = "float"
-            bool = "bool"
-
-        type: Type
+        type: str
+        default: Optional[Any] = "ellipsis"
         description: str = ""
         required: bool = True
+
+        def field_info(self) -> FieldInfo:
+            if self.default == "ellipsis":
+                return FieldInfo(description=self.description)
+            else:
+                return FieldInfo(default=self.default, description=self.description)
 
     title: str
     description: str
@@ -62,10 +64,10 @@ class MonitoringConfig(BaseModel):
 
     @classmethod
     def from_yamls(cls, alert_path: Path, actions_path: Path) -> "MonitoringConfig":
-        with open(alert_path, "r") as f:
+        with open(alert_path, "r", encoding="utf-8") as f:
             alerts_config = yaml.safe_load(f)
 
-        with open(actions_path, "r") as f:
+        with open(actions_path, "r", encoding="utf-8") as f:
             actions_config = yaml.safe_load(f)
 
         return cls(alerts=alerts_config["alerts"], actions=actions_config["actions"])
