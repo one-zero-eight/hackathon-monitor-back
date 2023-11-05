@@ -93,7 +93,7 @@ async def webhook(
             )
             # start mailing
             await alert_repository.start_delivery(mapped_alert.id, receivers)
-            if settings.SMTP_ENABLED:
+            if settings.SMTP_ENABLED and mapped_alert.severity == "critical":
                 from src.app.dependencies import Dependencies
 
                 smtp_repository = Dependencies.get_smtp_repository()
