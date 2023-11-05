@@ -5,7 +5,7 @@ from fastapi import Query
 from src.app.dependencies import DEPENDS_PG_STAT_REPOSITORY, DEPENDS_VERIFIED_REQUEST
 from src.app.views import router
 from src.config import Target, settings
-from src.exceptions import IncorrectCredentialsException, NoCredentialsException, ViewNotFoundException
+from src.exceptions import IncorrectCredentialsException, NoCredentialsException, ViewNotFoundException, SQLQueryError
 from src.repositories.pg import AbstractPgRepository
 from src.schemas.tokens import VerificationResult
 from src.storages.monitoring.config import settings as monitoring_settings, View
@@ -85,6 +85,7 @@ for view_alias, view in monitoring_settings.views.items():
             200: {"description": "Get view by alias with arguments"},
             **IncorrectCredentialsException.responses,
             **NoCredentialsException.responses,
+            **SQLQueryError.responses,
         },
         name=f"Get View {view_alias}",
         response_model=list[dict[str, Any]],

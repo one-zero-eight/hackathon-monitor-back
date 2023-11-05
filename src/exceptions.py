@@ -13,6 +13,8 @@ __all__ = [
     "UserAlreadyHasEmail",
     "ArgumentRequiredException",
     "WrongArgumentTypeException",
+    "SQLQueryError",
+    "SSHQueryError",
 ]
 
 from typing import Optional
@@ -226,3 +228,31 @@ class ViewNotFoundException(HTTPException):
         )
 
     responses = {404: {"description": "View with this alias not found"}}
+
+
+class SQLQueryError(HTTPException):
+    """
+    HTTP_400_BAD_REQUEST
+    """
+
+    def __init__(self, message: str):
+        super().__init__(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=message,
+        )
+
+    responses = {400: {"description": "SQL query error"}}
+
+
+class SSHQueryError(HTTPException):
+    """
+    HTTP_400_BAD_REQUEST
+    """
+
+    def __init__(self, message: str):
+        super().__init__(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=message,
+        )
+
+    responses = {400: {"description": "SSH query error"}}

@@ -3,12 +3,15 @@ from typing import Optional, Any
 
 import jinja2
 import paramiko
+from paramiko.ssh_exception import SSHException
 from sqlalchemy import Row
+from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.sql import text
 from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.sql import text
 
 from src.config import settings, Target
+from src.exceptions import SQLQueryError, SSHQueryError
 from src.repositories.pg.abc import AbstractPgRepository
 from src.schemas.pg_stats import ViewPgStatActivitySummary
 from src.storages.sqlalchemy import AbstractSQLAlchemyStorage
@@ -55,14 +58,20 @@ class PgRepository(AbstractPgRepository):
     async def execute_sql(self, sql: str, binds: dict[str, Any], target: Target) -> None:
         engine = create_async_engine(target.DB_URL.get_secret_value(), pool_recycle=3600)
 
-        async with engine.connect() as session:
-            statement = text(sql)
-            # get all params from statement
-            params = statement.compile().params
-            binds = {k: v for k, v in binds.items() if k in params}
-            statement = statement.bindparams(**binds)
-            await session.execute(statement)
-            await session.commit()
+        try:
+            async with engine.connect() as session:
+                statement = text(sql)
+                # get all params from statement
+                params = statement.compile().params
+                binds = {k: v for k, v in binds.items() if k in params}
+                statement = statement.bindparams(**binds)
+                try:
+                    await session.execute(statement)
+                except DBAPIError as e:
+                    raise SQLQueryError(str(e))
+                await session.commit()
+        except ConnectionRefusedError as e:
+            raise SQLQueryError(str(e))
 
     async def execute_sql_select(
         self, sql: str, limit: int, offset: int, target: Target
@@ -76,7 +85,10 @@ class PgRepository(AbstractPgRepository):
             binds = dict(limit=limit, offset=offset)
             binds = {k: v for k, v in binds.items() if k in params}
             statement = statement.bindparams(**binds)
-            r = await session.execute(statement)
+            try:
+                r = await session.execute(statement)
+            except DBAPIError as e:
+                raise SQLQueryError(str(e))
             table_rows = r.fetchall()
             return table_rows_to_list_of_dicts(list(table_rows))
 
@@ -90,14 +102,22 @@ class PgRepository(AbstractPgRepository):
         target_dict["TARGET__DB_URL"] = target_db_url
         binds.update(**settings.flatten(), **target_dict)
         binded = command_template.render(**binds)
-        client.connect(
-            hostname=target.SSH_HOST,
-            port=target.SSH_PORT,
-            username=target.SSH_USERNAME,
-            password=target.SSH_PASSWORD,
-        )
+        try:
+            client.connect(
+                hostname=target.SSH_HOST,
+                port=target.SSH_PORT,
+                username=target.SSH_USERNAME,
+                password=target.SSH_PASSWORD,
+            )
+        except paramiko.ssh_exception.AuthenticationException as e:
+            raise SSHQueryError(str(e))
         # TODO: Think how to fetch responses better
-        _stdin, _stdout, _stderr = client.exec_command(binded)
+
+        try:
+            _stdin, _stdout, _stderr = client.exec_command(binded)
+        except SSHException as e:
+            print(e)
+            raise SSHQueryError(str(e))
 
     async def fetch_targets(self) -> list[str]:
         return list(settings.TARGETS.keys())

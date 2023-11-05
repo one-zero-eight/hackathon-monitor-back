@@ -1,4 +1,3 @@
-from types import NoneType
 from typing import Annotated
 
 from fastapi import Query
@@ -12,11 +11,18 @@ from src.exceptions import (
     IncorrectCredentialsException,
     NoCredentialsException,
     ArgumentRequiredException,
+    SQLQueryError,
+    SSHQueryError,
 )
 from src.repositories.pg import AbstractPgRepository
 from src.schemas.tokens import VerificationResult
 from src.storages.monitoring.config import settings as monitoring_settings, Action
 from src.utils import permission_check
+
+
+class SomeResult(BaseModel):
+    success: bool = True
+    detail: str = ""
 
 
 async def _execute_action(pg_repository: AbstractPgRepository, action_alias: str, target: Target, **arguments):
@@ -25,12 +31,33 @@ async def _execute_action(pg_repository: AbstractPgRepository, action_alias: str
     for argument_name, argument in action.arguments.items():
         if argument.required and argument_name not in arguments:
             raise ArgumentRequiredException(argument_name)
+    exceptions = []
 
     for step in action.steps:
-        if step.type == Action.Step.Type.sql:
-            await pg_repository.execute_sql(step.query, binds=arguments, target=target)
-        elif step.type == Action.Step.Type.ssh:
-            await pg_repository.execute_ssh(step.query, binds=arguments, target=target)
+        try:
+            if step.type == Action.Step.Type.sql:
+                await pg_repository.execute_sql(step.query, binds=arguments, target=target)
+            elif step.type == Action.Step.Type.ssh:
+                await pg_repository.execute_ssh(step.query, binds=arguments, target=target)
+        except (SQLQueryError, SSHQueryError) as e:
+            if step.required:
+                return SomeResult(
+                    success=False,
+                    detail=f"{step.query}: {e.__class__.__name__}: {e.detail}",
+                )
+            exceptions.append((step, e))
+
+    if exceptions:
+        detail = []
+        for step, e in exceptions:
+            detail.append(f"{step.query}: {e.__class__.__name__}: {e.detail}")
+
+        return SomeResult(
+            success=True,
+            detail="\n".join([f"{e.__class__.__name__}: {e.detail}" for step, e in exceptions]),
+        )
+
+    return SomeResult()
 
 
 # generate routes for each action
@@ -63,12 +90,12 @@ for action_alias, action in monitoring_settings.actions.items():
         wrapper(action_alias),
         methods=["POST"],
         responses={
-            200: {"description": "Execute action by alias with arguments"},
+            200: {"description": "Execute action"},
             **IncorrectCredentialsException.responses,
             **NoCredentialsException.responses,
         },
         name=f"Execute Action {action_alias}",
-        response_model=NoneType,
+        response_model=SomeResult,
     )
 
 
@@ -96,7 +123,7 @@ async def get_actions(
 @router.get(
     "/{action_alias}",
     responses={
-        200: {"description": "Execute action by alias"},
+        200: {"description": "Get action by alias"},
         **IncorrectCredentialsException.responses,
         **NoCredentialsException.responses,
     },
