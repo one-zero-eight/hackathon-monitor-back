@@ -1,6 +1,6 @@
 import datetime
 
-from sqlalchemy import insert, select, update, and_, not_
+from sqlalchemy import insert, select, update, and_, not_, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.repositories.alerts.abc import AbstractAlertRepository
@@ -134,12 +134,9 @@ class AlertRepository(AbstractAlertRepository):
                     AlertDelivery.receiver_id.in_(receivers),
                 )
             )
-            to_be_updated = await session.scalars(q)
-            if to_be_updated:
-                statement = (
-                    update(AlertDelivery)
-                    .where(AlertDelivery.id.in_([r.id for r in to_be_updated]))
-                    .values(delivered=True)
-                )
+            to_be_deleted = await session.scalars(q)
+
+            if to_be_deleted:
+                statement = delete(AlertDelivery).where(AlertDelivery.id.in_([r.id for r in to_be_deleted]))
                 await session.execute(statement)
                 await session.commit()
