@@ -85,8 +85,9 @@ class PgRepository(AbstractPgRepository):
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
         command_template = jinja2.Environment(autoescape=True).from_string(command)
-        target.DB_URL = target.DB_URL.get_secret_value()
+        target_db_url = target.DB_URL.get_secret_value()
         target_dict = {f"TARGET__{k}": v for k, v in target.model_dump().items()}
+        target_dict["TARGET__DB_URL"] = target_db_url
         binds.update(**settings.flatten(), **target_dict)
         binded = command_template.render(**binds)
         client.connect(
