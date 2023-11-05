@@ -5,7 +5,7 @@ from fastapi import Query
 from pydantic import BaseModel, create_model
 
 from src.app.actions import router
-from src.app.dependencies import DEPENDS_BOT, DEPENDS_PG_STAT_REPOSITORY
+from src.app.dependencies import DEPENDS_PG_STAT_REPOSITORY, DEPENDS_VERIFIED_REQUEST
 from src.config import settings, Target
 from src.exceptions import (
     ActionNotFoundException,
@@ -14,6 +14,7 @@ from src.exceptions import (
     ArgumentRequiredException,
 )
 from src.repositories.pg import AbstractPgRepository
+from src.schemas.tokens import VerificationResult
 from src.storages.monitoring.config import settings as monitoring_settings, Action
 
 
@@ -42,7 +43,7 @@ for action_alias, action in monitoring_settings.actions.items():
     def wrapper(binded_action_alias: str):
         # for function closure (to pass action_alias)
         async def execute_action(
-            _bot: Annotated[bool, DEPENDS_BOT],
+            _verification: Annotated[VerificationResult, DEPENDS_VERIFIED_REQUEST],
             pg_repository: Annotated[AbstractPgRepository, DEPENDS_PG_STAT_REPOSITORY],
             arguments: _Arguments,
             target_alias: str = Query(...),
@@ -82,7 +83,7 @@ class ActionWithAlias(Action):
     },
 )
 async def get_actions(
-    _bot: Annotated[bool, DEPENDS_BOT],
+    _verification: Annotated[VerificationResult, DEPENDS_VERIFIED_REQUEST],
 ) -> list[ActionWithAlias]:
     return [
         ActionWithAlias(**action.dict(), alias=action_alias)
@@ -99,7 +100,7 @@ async def get_actions(
     },
 )
 async def get_action(
-    _bot: Annotated[bool, DEPENDS_BOT],
+    _verification: Annotated[VerificationResult, DEPENDS_VERIFIED_REQUEST],
     action_alias: str,
 ) -> ActionWithAlias:
     action: Action = monitoring_settings.actions.get(action_alias, None)

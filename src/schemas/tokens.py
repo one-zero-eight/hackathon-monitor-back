@@ -1,4 +1,4 @@
-__all__ = ["UserTokenData"]
+__all__ = ["UserTokenData", "VerificationResult"]
 
 from typing import Optional
 
@@ -14,3 +14,8 @@ class UserTokenData(BaseModel):
         if isinstance(v, str):
             return int(v)
         return v
+
+
+class VerificationResult(BaseModel):
+    success: bool
+    user_id: Optional[int] = None

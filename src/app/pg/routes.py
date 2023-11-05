@@ -10,6 +10,7 @@ from src.exceptions import (
 )
 from src.repositories.pg import AbstractPgRepository
 from src.schemas.pg_stats import ViewPgStatActivitySummary
+from src.schemas.tokens import VerificationResult
 
 
 class PgStatActivitySummaryResult(BaseModel):
@@ -29,7 +30,7 @@ class PgStatActivitySummaryResult(BaseModel):
     },
 )
 async def get_statistics_summary(
-    _verify_bot: Annotated[bool, DEPENDS_BOT],
+    _verification: Annotated[VerificationResult, DEPENDS_BOT],
     pg_repository: Annotated[AbstractPgRepository, DEPENDS_PG_STAT_REPOSITORY],
 ) -> PgStatActivitySummaryResult:
     pg_stat_activity = await pg_repository.read_pg_stat_summary()
@@ -49,7 +50,7 @@ async def get_statistics_summary(
     },
 )
 async def targets(
-    _verify_bot: Annotated[bool, DEPENDS_BOT],
+    _verification: Annotated[VerificationResult, DEPENDS_BOT],
     pg_repository: Annotated[AbstractPgRepository, DEPENDS_PG_STAT_REPOSITORY],
 ) -> list[str]:
     return await pg_repository.fetch_targets()

@@ -1,9 +1,11 @@
 import hashlib
 import hmac
+import json
 
 from pydantic import BaseModel
 
 from src.config import settings
+from src.schemas.tokens import VerificationResult
 
 
 class TelegramWidgetData(BaseModel):
@@ -11,6 +13,11 @@ class TelegramWidgetData(BaseModel):
     query_id: str
     user: str
     auth_date: int
+
+    @property
+    def user_id(self):
+        json_ = json.loads(self.user)
+        return json_["id"]
 
     @classmethod
     def parse_from_string(cls, string: str) -> "TelegramWidgetData":
@@ -31,7 +38,7 @@ class TelegramWidgetData(BaseModel):
         return self.string_to_hash.encode("utf-8").decode("unicode-escape").encode("ISO-8859-1")
 
 
-def telegram_webapp_check_authorization(telegram_data: TelegramWidgetData) -> bool:
+def telegram_webapp_check_authorization(telegram_data: TelegramWidgetData) -> VerificationResult:
     """
     Verify telegram data
 
@@ -43,4 +50,9 @@ def telegram_webapp_check_authorization(telegram_data: TelegramWidgetData) -> bo
     secret_key = hmac.new("WebAppData".encode(), token.encode(), hashlib.sha256).digest()
     evaluated_hash = hmac.new(secret_key, encoded_telegarm_data, hashlib.sha256).hexdigest()
 
-    return evaluated_hash == received_hash
+    success = evaluated_hash == received_hash
+
+    if success:
+        return VerificationResult(success=success, user_id=telegram_data.user_id)
+    else:
+        return VerificationResult(success=success)

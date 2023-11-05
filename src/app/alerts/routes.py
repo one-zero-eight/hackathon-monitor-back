@@ -5,10 +5,11 @@ from fastapi import BackgroundTasks
 from pydantic import BaseModel, ConfigDict
 
 from src.app.alerts import router
-from src.app.dependencies import DEPENDS_ALERT_REPOSITORY
+from src.app.dependencies import DEPENDS_ALERT_REPOSITORY, DEPENDS_VERIFIED_REQUEST, DEPENDS_BOT
 from src.config import settings
 from src.repositories.alerts import AbstractAlertRepository
 from src.schemas.alerts import AlertDB, AlertDeliveryScheme, MappedAlert
+from src.schemas.tokens import VerificationResult
 
 
 class AlertManagerRequest(BaseModel):
@@ -28,9 +29,7 @@ class AlertManagerRequest(BaseModel):
                             "severity": "critical",
                         },
                         "annotations": {
-                            "description": "A Prometheus target has disappeared. An exporter might be crashed. VALUE "
-                            "= 0"
-                            "LABELS: map[__name__:up instance:postgres_exporter:9187 job:postgres]",
+                            "description": "A Prometheus target has disappeared. An exporter might be crashed.",
                             "summary": "Prometheus target missing (instance postgres_exporter:9187)",
                         },
                         "startsAt": "2023-11-04T11:40:04.807+03:00",
@@ -69,6 +68,7 @@ class AlertManagerRequest(BaseModel):
 async def webhook(
     alert_repository: Annotated[AbstractAlertRepository, DEPENDS_ALERT_REPOSITORY],
     data: AlertManagerRequest,
+    _verification: Annotated[VerificationResult, DEPENDS_BOT],
     background_tasks: BackgroundTasks,
 ):
     for alert in data.alerts:
@@ -95,11 +95,12 @@ async def webhook(
             await alert_repository.start_delivery(mapped_alert.id, receivers)
             # if settings.SMTP_ENABLED:
             #     from src.app.dependencies import Dependencies
-            #
             #     smtp_repository = Dependencies.get_smtp_repository()
             #
             #     # send email
-            #     background_tasks.add_task()
+            #     background_tasks.add_task(
+            #
+            #     )
 
         except KeyError:
             continue
@@ -109,6 +110,7 @@ async def webhook(
 async def get_alert(
     alert_repository: Annotated[AbstractAlertRepository, DEPENDS_ALERT_REPOSITORY],
     alert_id: int,
+    _verification: Annotated[VerificationResult, DEPENDS_VERIFIED_REQUEST],
 ) -> MappedAlert:
     return await alert_repository.get_alert(alert_id)
 
@@ -116,6 +118,7 @@ async def get_alert(
 @router.get("/delivery", status_code=200)
 async def check_delivery(
     alert_repository: Annotated[AbstractAlertRepository, DEPENDS_ALERT_REPOSITORY],
+    _verificated: Annotated[VerificationResult, DEPENDS_BOT],
     age: int = 3600,
 ) -> list[AlertDeliveryScheme]:
     starting = datetime.datetime.utcnow() - datetime.timedelta(seconds=age)
@@ -130,6 +133,7 @@ class Finish(BaseModel):
 @router.post("/finish", status_code=200)
 async def finish_delivery(
     alert_repository: Annotated[AbstractAlertRepository, DEPENDS_ALERT_REPOSITORY],
+    _verificated: Annotated[VerificationResult, DEPENDS_BOT],
     finish: Finish,
 ):
     await alert_repository.stop_delivery(finish.alert_id, finish.receivers)

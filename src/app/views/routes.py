@@ -2,11 +2,12 @@ from typing import Annotated, Optional, Any
 
 from fastapi import Query
 
-from src.app.dependencies import DEPENDS_BOT, DEPENDS_PG_STAT_REPOSITORY
+from src.app.dependencies import DEPENDS_PG_STAT_REPOSITORY, DEPENDS_VERIFIED_REQUEST
 from src.app.views import router
 from src.config import Target, settings
 from src.exceptions import IncorrectCredentialsException, NoCredentialsException
 from src.repositories.pg import AbstractPgRepository
+from src.schemas.tokens import VerificationResult
 from src.storages.monitoring.config import settings as monitoring_settings, View
 
 
@@ -23,7 +24,7 @@ class ViewWithAlias(View):
     },
 )
 async def get_views(
-    _bot: Annotated[bool, DEPENDS_BOT],
+    _verification: Annotated[VerificationResult, DEPENDS_VERIFIED_REQUEST],
 ) -> list[ViewWithAlias]:
     return [ViewWithAlias(**view.dict(), alias=view_alias) for view_alias, view in monitoring_settings.views.items()]
 
@@ -43,7 +44,7 @@ for view_alias, view in monitoring_settings.views.items():
     def wrapper(binded_view_alias: str):
         # for function closure (to pass action_alias)
         async def execute_view(
-            _bot: Annotated[bool, DEPENDS_BOT],
+            _verification: Annotated[VerificationResult, DEPENDS_VERIFIED_REQUEST],
             pg_repository: Annotated[AbstractPgRepository, DEPENDS_PG_STAT_REPOSITORY],
             limit: int = 20,
             offset: int = 0,

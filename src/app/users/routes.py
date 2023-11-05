@@ -13,6 +13,7 @@ from src.exceptions import (
 )
 from src.repositories.smtp.abc import AbstractSMTPRepository
 from src.repositories.users import AbstractUserRepository
+from src.schemas.tokens import VerificationResult
 from src.schemas.users import ViewUser, CreateUser
 
 
@@ -26,7 +27,7 @@ from src.schemas.users import ViewUser, CreateUser
 )
 async def get_user(
     user_id: int,
-    _verify_bot: Annotated[bool, DEPENDS_BOT],
+    _verification: Annotated[VerificationResult, DEPENDS_BOT],
     user_repository: Annotated[AbstractUserRepository, DEPENDS_USER_REPOSITORY],
 ) -> ViewUser:
     """
@@ -50,7 +51,7 @@ async def get_user(
 async def register_via_telegram(
     user: CreateUser,
     user_repository: Annotated[AbstractUserRepository, DEPENDS_USER_REPOSITORY],
-    _verify_bot: Annotated[bool, DEPENDS_BOT],
+    _verification: Annotated[VerificationResult, DEPENDS_BOT],
 ):
     """
     Registration via Telegram
@@ -69,7 +70,7 @@ if settings.SMTP_ENABLED:
         user_id: int,
         background_tasks: BackgroundTasks,
         smtp_repository: Annotated[AbstractSMTPRepository, DEPENDS_SMTP_REPOSITORY],
-        _verify_bot: Annotated[bool, DEPENDS_BOT],
+        _verification: Annotated[VerificationResult, DEPENDS_BOT],
         user_repository: Annotated[AbstractUserRepository, DEPENDS_USER_REPOSITORY],
     ):
         """

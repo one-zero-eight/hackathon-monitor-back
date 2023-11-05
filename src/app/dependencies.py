@@ -7,6 +7,7 @@ __all__ = [
     "DEPENDS_WEBAPP",
     "DEPENDS_PG_STAT_REPOSITORY",
     "DEPENDS_ALERT_REPOSITORY",
+    "DEPENDS_VERIFIED_REQUEST",
     "Dependencies",
 ]
 
@@ -76,7 +77,8 @@ DEPENDS_SMTP_REPOSITORY = Depends(Dependencies.get_smtp_repository)
 DEPENDS_PG_STAT_REPOSITORY = Depends(Dependencies.get_pg_stat_repository)
 DEPENDS_ALERT_REPOSITORY = Depends(Dependencies.get_alert_repository)
 
-from src.app.auth.dependencies import verify_bot_token, verify_webapp  # noqa: E402
+from src.app.auth.dependencies import verify_bot_token, verify_webapp, verify_request  # noqa: E402
 
 DEPENDS_BOT = Depends(verify_bot_token)
 DEPENDS_WEBAPP = Depends(verify_webapp)
+DEPENDS_VERIFIED_REQUEST = Depends(verify_request)
