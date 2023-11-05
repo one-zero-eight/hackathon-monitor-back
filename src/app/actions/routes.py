@@ -16,6 +16,7 @@ from src.exceptions import (
 from src.repositories.pg import AbstractPgRepository
 from src.schemas.tokens import VerificationResult
 from src.storages.monitoring.config import settings as monitoring_settings, Action
+from src.utils import permission_check
 
 
 async def _execute_action(pg_repository: AbstractPgRepository, action_alias: str, target: Target, **arguments):
@@ -50,6 +51,7 @@ for action_alias, action in monitoring_settings.actions.items():
         ):
             arguments: BaseModel
             target: Target = settings.TARGETS[target_alias]
+            permission_check(_verification, target)
             return await _execute_action(
                 pg_repository, binded_action_alias, **arguments.model_dump(exclude_none=True), target=target
             )

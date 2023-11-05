@@ -9,6 +9,7 @@ from src.exceptions import IncorrectCredentialsException, NoCredentialsException
 from src.repositories.pg import AbstractPgRepository
 from src.schemas.tokens import VerificationResult
 from src.storages.monitoring.config import settings as monitoring_settings, View
+from src.utils import permission_check
 
 
 class ViewWithAlias(View):
@@ -51,6 +52,7 @@ for view_alias, view in monitoring_settings.views.items():
             target_alias: str = Query(...),
         ):
             target = settings.TARGETS[target_alias]
+            permission_check(_verification, target)
             return await _execute_view(pg_repository, binded_view_alias, limit=limit, offset=offset, target=target)
 
         return execute_view

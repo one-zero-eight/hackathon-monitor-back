@@ -7,7 +7,9 @@ import yaml
 from fastapi.routing import APIRoute
 
 from src.config import settings, Target
+from src.exceptions import NotEnoughPermissionsException
 from src.repositories.alerts import AlertRepository
+from src.schemas.tokens import VerificationResult
 from src.storages.monitoring.config import Alert, settings as monitoring_settings
 
 
@@ -133,3 +135,8 @@ async def generate_prometheus_configs():
         logging.warning("Reloading Prometheus")
         async with httpx.AsyncClient() as client:
             await client.post(settings.PROMETHEUS.URL + "/-/reload")
+
+
+def permission_check(_verification: VerificationResult, target: Target):
+    if (not _verification.user_id) or (_verification.user_id not in target.ADMINS):
+        raise NotEnoughPermissionsException()
