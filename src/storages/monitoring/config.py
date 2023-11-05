@@ -46,6 +46,7 @@ class Action(BaseModel):
 
         type: Type
         query: str
+        required: bool = True
 
     title: str
     description: Optional[str] = ""

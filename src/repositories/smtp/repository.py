@@ -15,8 +15,6 @@ from src.schemas.alerts import MappedAlert
 class SMTPRepository(AbstractSMTPRepository):
     def __init__(self):
         self._server = smtplib.SMTP(settings.SMTP.SERVER, settings.SMTP.PORT)
-        self._server.starttls()
-        self._server.login(settings.SMTP.USERNAME, settings.SMTP.PASSWORD.get_secret_value())
 
     def send(self, message: str, to: str):
         try:
@@ -24,7 +22,10 @@ class SMTPRepository(AbstractSMTPRepository):
             to = valid.normalized
         except EmailNotValidError as e:
             raise ValueError(e)
+        self._server.starttls()
+        self._server.login(settings.SMTP.USERNAME, settings.SMTP.PASSWORD.get_secret_value())
         self._server.sendmail(settings.SMTP.USERNAME, to, message)
+        self._server.quit()
 
     def send_connect_email(self, email: str, auth_code: str):
         mail = MIMEMultipart("related")
@@ -49,7 +50,10 @@ class SMTPRepository(AbstractSMTPRepository):
         mail["From"] = settings.SMTP.USERNAME
         mail["To"] = email
 
+        self._server.starttls()
+        self._server.login(settings.SMTP.USERNAME, settings.SMTP.PASSWORD.get_secret_value())
         self._server.sendmail(settings.SMTP.USERNAME, email, mail.as_string())
+        self._server.quit()
 
     def send_alert_message(
         self,
@@ -87,7 +91,10 @@ class SMTPRepository(AbstractSMTPRepository):
         mail["From"] = settings.SMTP.USERNAME
         mail["To"] = email
 
+        self._server.starttls()
+        self._server.login(settings.SMTP.USERNAME, settings.SMTP.PASSWORD.get_secret_value())
         self._server.sendmail(settings.SMTP.USERNAME, email, mail.as_string())
+        self._server.quit()
 
     def close(self):
         self._server.quit()

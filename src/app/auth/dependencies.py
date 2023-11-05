@@ -61,7 +61,7 @@ async def verify_request(
 
 async def verify_bot_token(
     token: Optional[str] = Depends(get_access_token),
-) -> bool:
+) -> VerificationResult:
     """
     :raises NoCredentialsException: if token is not provided
     :raises IncorrectCredentialsException: if token is invalid
@@ -72,15 +72,17 @@ async def verify_bot_token(
     if not token:
         raise NoCredentialsException()
 
-    if not TokenRepository.verify_bot_token(token):
+    verification_result = TokenRepository.verify_bot_token(token)
+
+    if not verification_result.success:
         raise IncorrectCredentialsException()
 
-    return True
+    return verification_result
 
 
 def verify_webapp(
     bearer: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme),
-) -> bool:
+) -> VerificationResult:
     """
     Verify telegram data
 
@@ -93,7 +95,9 @@ def verify_webapp(
 
     telegram_data = TelegramWidgetData.parse_from_string(bearer.credentials)
 
-    if not telegram_webapp_check_authorization(telegram_data):
+    verification_result = telegram_webapp_check_authorization(telegram_data)
+
+    if not verification_result.success:
         raise IncorrectCredentialsException()
 
-    return True
+    return verification_result
