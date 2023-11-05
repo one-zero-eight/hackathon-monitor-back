@@ -29,7 +29,7 @@ alerts:
     severity: critical
     rule:
       expr: pg_up != 1
-      for: 1m
+      for: 15s
       annotations:
         description: "{{ $labels.instance }} отклоняет запросы от экспортера и, вероятно, не позволяет работать запросам DNS. Пользовательские сервисы, вероятно, не будут затронуты, при условии, что хотя бы один узел остается включенным."
     suggested_actions: [create_dump, restart_db]
