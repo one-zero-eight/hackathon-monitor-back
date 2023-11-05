@@ -32,7 +32,7 @@ alerts:
       for: 15s
       annotations:
         description: "{{ $labels.instance }} отклоняет запросы от экспортера и, вероятно, не позволяет работать запросам DNS. Пользовательские сервисы, вероятно, не будут затронуты, при условии, что хотя бы один узел остается включенным."
-    suggested_actions: [create_dump, restart_db]
+    suggested_actions: [restart_db]
     related_views: []
 
   slow_queries:
