@@ -42,7 +42,7 @@ async def get_view(
     _verification: Annotated[VerificationResult, DEPENDS_VERIFIED_REQUEST],
     view_alias: str,
 ) -> ViewWithAlias:
-    view: View = monitoring_settings.actions.get(view_alias, None)
+    view: View = monitoring_settings.views.get(view_alias, None)
 
     if view is None:
         raise ViewNotFoundException(view_alias)

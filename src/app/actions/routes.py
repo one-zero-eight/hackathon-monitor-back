@@ -46,7 +46,7 @@ for action_alias, action in monitoring_settings.actions.items():
         async def execute_action(
             _verification: Annotated[VerificationResult, DEPENDS_VERIFIED_REQUEST],
             pg_repository: Annotated[AbstractPgRepository, DEPENDS_PG_STAT_REPOSITORY],
-            arguments: _Arguments,
+            arguments: _Arguments | None = None,
             target_alias: str = Query(...),
         ):
             arguments: BaseModel

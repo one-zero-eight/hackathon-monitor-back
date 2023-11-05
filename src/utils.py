@@ -138,5 +138,8 @@ async def generate_prometheus_configs():
 
 
 def permission_check(_verification: VerificationResult, target: Target):
-    if (not _verification.user_id) or (_verification.user_id not in target.ADMINS):
+    if _verification.user_id is None:
+        return
+
+    if _verification.user_id not in target.ADMINS:
         raise NotEnoughPermissionsException()
