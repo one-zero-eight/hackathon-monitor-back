@@ -5,7 +5,7 @@ from fastapi import Query
 from src.app.dependencies import DEPENDS_PG_STAT_REPOSITORY, DEPENDS_VERIFIED_REQUEST
 from src.app.views import router
 from src.config import Target, settings
-from src.exceptions import IncorrectCredentialsException, NoCredentialsException
+from src.exceptions import IncorrectCredentialsException, NoCredentialsException, ViewNotFoundException
 from src.repositories.pg import AbstractPgRepository
 from src.schemas.tokens import VerificationResult
 from src.storages.monitoring.config import settings as monitoring_settings, View
@@ -28,6 +28,26 @@ async def get_views(
     _verification: Annotated[VerificationResult, DEPENDS_VERIFIED_REQUEST],
 ) -> list[ViewWithAlias]:
     return [ViewWithAlias(**view.dict(), alias=view_alias) for view_alias, view in monitoring_settings.views.items()]
+
+
+@router.get(
+    "/{view_alias}",
+    responses={
+        200: {"description": "Execute action by alias"},
+        **IncorrectCredentialsException.responses,
+        **NoCredentialsException.responses,
+    },
+)
+async def get_view(
+    _verification: Annotated[VerificationResult, DEPENDS_VERIFIED_REQUEST],
+    view_alias: str,
+) -> ViewWithAlias:
+    view: View = monitoring_settings.actions.get(view_alias, None)
+
+    if view is None:
+        raise ViewNotFoundException(view_alias)
+
+    return ViewWithAlias(**view.model_dump(), alias=view_alias)
 
 
 async def _execute_view(

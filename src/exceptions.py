@@ -9,6 +9,7 @@ __all__ = [
     "ClientNotFound",
     "DBUserAlreadyExists",
     "ActionNotFoundException",
+    "ViewNotFoundException",
     "UserAlreadyHasEmail",
     "ArgumentRequiredException",
     "WrongArgumentTypeException",
@@ -211,3 +212,17 @@ class WrongArgumentTypeException(HTTPException):
         )
 
     responses = {400: {"description": "Argument must be of type"}}
+
+
+class ViewNotFoundException(HTTPException):
+    """
+    HTTP_404_NOT_FOUND
+    """
+
+    def __init__(self, view_alias: str):
+        super().__init__(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"View with alias `{view_alias}` not found",
+        )
+
+    responses = {404: {"description": "View with this alias not found"}}
