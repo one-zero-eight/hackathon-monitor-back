@@ -65,4 +65,4 @@ if settings.ENVIRONMENT == Environment.DEVELOPMENT:
 
     warnings.warn("SQLAlchemy logging is enabled!")
     logging.basicConfig()
-    logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
+    logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
