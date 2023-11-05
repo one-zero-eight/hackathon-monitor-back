@@ -3,6 +3,7 @@ __all__ = ["app"]
 import warnings
 
 from fastapi import FastAPI
+from starlette.middleware.cors import CORSMiddleware
 
 from src import constants
 from src.app import routers
@@ -25,6 +26,16 @@ app = FastAPI(
     swagger_ui_oauth2_redirect_url=None,
     generate_unique_id_function=generate_unique_operation_id,
 )
+
+# CORS settings
+if settings.CORS_ALLOW_ORIGINS:
+    app.add_middleware(
+        middleware_class=CORSMiddleware,
+        allow_origins=settings.CORS_ALLOW_ORIGINS,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 if settings.SMTP_ENABLED:
     warnings.warn("SMTP and email connection is enabled!")

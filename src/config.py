@@ -91,6 +91,11 @@ class Settings(BaseModel):
     TARGETS: dict[str, Target] = Field(default_factory=dict)
     # Authentication
     COOKIE: Cookies = Field(default_factory=Cookies)
+    # CORS configuration
+    CORS_ALLOW_ORIGINS: list[str] = [
+        "https://monitor.innohassle.ru",
+        "http://localhost:3000",
+    ]
     # SMTP server settings
     SMTP_ENABLED: bool = False
     SMTP: Optional[Smtp] = None
