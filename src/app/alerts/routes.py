@@ -6,7 +6,7 @@ from pydantic import BaseModel, ConfigDict
 
 from src.app.alerts import router
 from src.app.dependencies import DEPENDS_ALERT_REPOSITORY, DEPENDS_VERIFIED_REQUEST, DEPENDS_BOT
-from src.config import settings
+from src.config import settings, Target
 from src.repositories.alerts import AbstractAlertRepository
 from src.schemas.alerts import AlertDB, AlertDeliveryScheme, MappedAlert
 from src.schemas.tokens import VerificationResult
@@ -79,7 +79,7 @@ async def webhook(
         # resolve multiple targets
         try:
             target_alias = alert["labels"]["target"]
-            target = settings.TARGETS[target_alias]
+            target: Target = settings.TARGETS[target_alias]
             receivers = target.ADMINS
 
             # save alert
@@ -93,14 +93,18 @@ async def webhook(
             )
             # start mailing
             await alert_repository.start_delivery(mapped_alert.id, receivers)
-            # if settings.SMTP_ENABLED:
-            #     from src.app.dependencies import Dependencies
-            #     smtp_repository = Dependencies.get_smtp_repository()
-            #
-            #     # send email
-            #     background_tasks.add_task(
-            #
-            #     )
+            if settings.SMTP_ENABLED:
+                from src.app.dependencies import Dependencies
+
+                smtp_repository = Dependencies.get_smtp_repository()
+
+                for email in target.EMAILS:
+                    # send email
+                    background_tasks.add_task(
+                        smtp_repository.send_alert_message,
+                        email=email,
+                        mapped_alert=mapped_alert,
+                    )
 
         except KeyError:
             continue

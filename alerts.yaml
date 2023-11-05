@@ -19,7 +19,7 @@ alerts:
       expr: sum(pg_stat_activity_count) by (instance) > (sum(pg_settings_max_connections) by (instance) - sum(pg_settings_superuser_reserved_connections) by (instance)) * 0.8
       for: 10m
       annotations:
-        description: "{{ $labels.instance }} превышает 80% текущего максимального лимита соединений с Postgres (текущее значение: {{ $value }}). Пожалуйста, проверьте графики использования и подтвердите, является ли это нормальным ростом сервиса, злоупотреблением или временным состоянием, или если необходимо предоставить новые ресурсы (или, вероятнее всего, увеличить лимиты)."
+        description: "{{ $labels.instance }} превышает 80% текущего максимального лимита соединений с Postgres (текущее значение: {{ $value }}). Пожалуйста, проверьте графики использования, является ли это нормальным ростом сервиса, злоупотреблением или временным состоянием, или если необходимо предоставить новые ресурсы (или, вероятнее всего, увеличить лимиты)."
     suggested_actions: [create_dump, restart_db]
     related_views: []
 
@@ -43,7 +43,7 @@ alerts:
       expr: avg(rate(pg_stat_activity_max_tx_duration{datname!~"template.*"}[2m])) by (datname) > 2 * 60
       for: 2m
       annotations:
-        description: "PostgreSQL высокое количество медленных запросов {{ $labels.cluster }} для базы данных {{ $labels.datname }} со значением {{ $value }}"
+        description: "PostgreSQL: высокое количество медленных запросов для базы данных ({{ $labels.datname }}) со значением {{ $value }}"
     suggested_actions: [create_dump, restart_db]
     related_views: []
 
@@ -55,7 +55,7 @@ alerts:
       expr: avg(irate(pg_stat_database_xact_commit{datname!~"template.*"}[5m]) + irate(pg_stat_database_xact_rollback{datname!~"template.*"}[5m])) by (datname) > 10000
       for: 5m
       annotations:
-        description: "PostgreSQL высокое количество запросов в секунду на {{ $labels.cluster }} для базы данных {{ $labels.datname }} со значением {{ $value }}"
+        description: "PostgreSQL: высокое количество запросов в секунду для базы данных ({{ $labels.datname }}) со значением {{ $value }}"
     suggested_actions: [create_dump, restart_db]
     related_views: []
 
@@ -67,7 +67,7 @@ alerts:
       expr: avg(rate(pg_stat_database_blks_hit{datname!~"template.*"}[5m]) / (rate(pg_stat_database_blks_hit{datname!~"template.*"}[5m]) + rate(pg_stat_database_blks_read{datname!~"template.*"}[5m]))) by (datname) < 0.98
       for: 5m
       annotations:
-        description: "PostgreSQL низкий коэффициент попаданий в кэш на {{ $labels.cluster }} для базы данных {{ $labels.datname }} со значением {{ $value }}"
+        description: "PostgreSQL низкий коэффициент попаданий в кэш для базы данных ({{ $labels.datname }}) со значением {{ $value }}"
     suggested_actions: [create_dump, restart_db]
     related_views: []
 
@@ -80,7 +80,7 @@ alerts:
       expr: pg_stat_activity_count > 5
       for: 0m
       annotations:
-        description: "PostgreSQL высокое количество активных запросов на {{ $labels.cluster }} для базы данных {{ $labels.datname }} со значением {{ $value }}"
+        description: "PostgreSQL высокое количество активных запросов для базы данных (({{ $labels.datname }})) со значением {{ $value }}"
     suggested_actions: [create_dump, restart_db]
     related_views: []
 

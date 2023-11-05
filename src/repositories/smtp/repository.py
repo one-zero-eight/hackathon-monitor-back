@@ -9,6 +9,7 @@ from jinja2 import Template
 
 from src.config import settings
 from src.repositories.smtp.abc import AbstractSMTPRepository
+from src.schemas.alerts import MappedAlert
 
 
 class SMTPRepository(AbstractSMTPRepository):
@@ -53,8 +54,40 @@ class SMTPRepository(AbstractSMTPRepository):
     def send_alert_message(
         self,
         email: str,
+        mapped_alert: "MappedAlert",
     ):
-        ...
+        mail = MIMEMultipart("related")
+        # Jinja2 for html template
+        main = Template(
+            """
+            {% if alert.status == "resolved" %}
+            Проблема устранена: <b>{{ alert.title }}</b> ✅ <br/>
+            {% else %}
+            {% set emoji = "⚠️" if alert.severity == "warning" else "🚨" %}
+            {{ emoji }} <b>{{ alert.title }}</b> {{ emoji }} <br/>
+            {% endif %}
+
+            Сервер: <b>{{ alert.target_alias }} </b> <br/>
+
+            Время: {{ alert.timestamp.strftime("%Y-%m-%d %H:%M:%S") }} <br/>
+
+            {% if alert.description %}
+            Описание: <br/>
+            {{ alert.description }} <br/>
+            {% endif %}
+            """,
+            autoescape=True,
+        )
+
+        html = main.render(alert=mapped_alert)
+        msgHtml = MIMEText(html, "html")
+        mail.attach(msgHtml)
+        subject = f"Оповещение: {mapped_alert.target_alias} {mapped_alert.title}"
+        mail["Subject"] = subject
+        mail["From"] = settings.SMTP.USERNAME
+        mail["To"] = email
+
+        self._server.sendmail(settings.SMTP.USERNAME, email, mail.as_string())
 
     def close(self):
         self._server.quit()

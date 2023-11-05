@@ -2,6 +2,8 @@ __all__ = ["AbstractSMTPRepository"]
 
 from abc import ABCMeta, abstractmethod
 
+from src.schemas.alerts import MappedAlert
+
 
 class AbstractSMTPRepository(metaclass=ABCMeta):
     @abstractmethod
@@ -23,9 +25,10 @@ class AbstractSMTPRepository(metaclass=ABCMeta):
         """
 
     @abstractmethod
-    async def send_alert_message(
+    def send_alert_message(
         self,
         email: str,
+        mapped_alert: "MappedAlert",
     ):
         """
         Send message to email.
