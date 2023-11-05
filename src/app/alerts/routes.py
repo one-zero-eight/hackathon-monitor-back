@@ -8,7 +8,7 @@ from src.app.alerts import router
 from src.app.dependencies import DEPENDS_ALERT_REPOSITORY, DEPENDS_VERIFIED_REQUEST, DEPENDS_BOT
 from src.config import settings, Target
 from src.repositories.alerts import AbstractAlertRepository
-from src.schemas.alerts import AlertDB, AlertDeliveryScheme, MappedAlert
+from src.schemas.alerts import AlertDB, MappedAlert
 from src.schemas.tokens import VerificationResult
 
 
@@ -119,14 +119,31 @@ async def get_alert(
     return await alert_repository.get_alert(alert_id)
 
 
+class GroupedDelivery(MappedAlert):
+    receivers: list[int]
+
+
 @router.get("/delivery", status_code=200)
 async def check_delivery(
     alert_repository: Annotated[AbstractAlertRepository, DEPENDS_ALERT_REPOSITORY],
     _verificated: Annotated[VerificationResult, DEPENDS_BOT],
     age: int = 3600,
-) -> list[AlertDeliveryScheme]:
+) -> list[GroupedDelivery]:
     starting = datetime.datetime.utcnow() - datetime.timedelta(seconds=age)
-    return await alert_repository.check_delivery(starting)
+
+    deliveries = await alert_repository.check_delivery(starting)
+    deliveries.sort(key=lambda x: x.alert_id)
+    from itertools import groupby
+
+    grouped = groupby(deliveries, lambda x: x.alert_id)
+
+    grouped_delivery = []
+
+    for alert_id, group in grouped:
+        mapped_alert = await alert_repository.get_alert(alert_id)
+        grouped_delivery.append(GroupedDelivery(receivers=[x.receiver_id for x in group], **mapped_alert.model_dump()))
+
+    return grouped_delivery
 
 
 class Finish(BaseModel):
