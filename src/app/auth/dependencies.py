@@ -4,6 +4,7 @@ from typing import Optional
 
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from pydantic import ValidationError
 
 from src.app.auth.telegram import telegram_webapp_check_authorization, TelegramWidgetData
 from src.exceptions import NoCredentialsException, IncorrectCredentialsException
@@ -41,10 +42,14 @@ async def verify_request(
         raise NoCredentialsException()
 
     bot_verification_result = TokenRepository.verify_bot_token(bearer.credentials)
+
     if bot_verification_result.success:
         return bot_verification_result
 
-    telegram_data = TelegramWidgetData.parse_from_string(bearer.credentials)
+    try:
+        telegram_data = TelegramWidgetData.parse_from_string(bearer.credentials)
+    except ValidationError:
+        raise IncorrectCredentialsException()
 
     webapp_verification_result = telegram_webapp_check_authorization(telegram_data)
 
