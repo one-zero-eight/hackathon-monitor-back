@@ -1,4 +1,4 @@
-__all__ = ["settings", "Settings", "Target"]
+__all__ = ["Environment", "settings", "Settings", "Target"]
 
 import os
 from enum import StrEnum

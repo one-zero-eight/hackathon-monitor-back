@@ -20,6 +20,7 @@ actions:
             - type: ssh
               query: echo {{ TARGET__SSH_PASSWORD }} | sudo -S systemctl restart postgresql
 
+    # kfa41di2
     create_dump:
         title: Создать дамп
         description: Создать дамп текущей базы данных.
@@ -29,4 +30,4 @@ actions:
                 type: str
         steps:
             - type: ssh
-              query: pg_dump --dbname={{ TARGET__DB_URL }} | gzip > tmp/{{ dump_name }}.gz
+              query: echo 1 # pg_dump --dbname={{ TARGET__DB_URL }} | gzip > tmp/{{ dump_name }}.gz

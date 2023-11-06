@@ -18,4 +18,9 @@ scrape_configs:
     - 10.91.6.95:9187
     - 10.91.6.95:9100
     labels:
-      target: artem
+      target: postgram1
+  - targets:
+    - 10.91.8.84:9187
+    - 10.91.8.84:9100
+    labels:
+      target: postgram2

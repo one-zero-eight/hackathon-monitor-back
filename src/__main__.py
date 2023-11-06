@@ -5,19 +5,21 @@ import warnings
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
-from src import constants
-from src.app import routers
+from src.api import docs
+from src.api.routers import routers
 from src.config import settings, Environment
-from src.utils import generate_unique_operation_id, setup_repositories, generate_prometheus_configs
+from src.api.startup import setup_repositories
+from src.prometheus import generate_prometheus_configs
+from src.api.docs import generate_unique_operation_id
 
 app = FastAPI(
-    title=constants.TITLE,
-    summary=constants.SUMMARY,
-    description=constants.DESCRIPTION,
-    version=constants.VERSION,
-    contact=constants.CONTACT_INFO,
-    license_info=constants.LICENSE_INFO,
-    openapi_tags=constants.TAGS_INFO,
+    title=docs.TITLE,
+    summary=docs.SUMMARY,
+    description=docs.DESCRIPTION,
+    version=docs.VERSION,
+    contact=docs.CONTACT_INFO,
+    license_info=docs.LICENSE_INFO,
+    openapi_tags=docs.TAGS_INFO,
     servers=[
         {"url": settings.APP_ROOT_PATH, "description": "Current"},
     ],
@@ -51,7 +53,7 @@ async def startup_event():
 
 @app.on_event("shutdown")
 async def close_connection():
-    from src.app.dependencies import Dependencies
+    from src.api.dependencies import Dependencies
 
     storage = Dependencies.get_storage()
     await storage.close_connection()
